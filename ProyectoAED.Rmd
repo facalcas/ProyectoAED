@@ -1,0 +1,13 @@
+---
+title: "ProyectoAED"
+author: "Fabián Calvo Castillo"
+date: "2025-10-21"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls())
+```
+
+Proyecto AED 9 de Noviembre Grupo E
