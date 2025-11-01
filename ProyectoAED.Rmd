@@ -12,6 +12,11 @@ rm(list = ls())
 
 Proyecto AED 9 de Noviembre Grupo E
 
+```{r Codificacion MSE}
+library(readr)
+guess_encoding("data/2014_MSE.csv")
+#Tienen codificación UTF-8
+```
 
 ```{r MSE}
 library(tidyverse)
@@ -36,7 +41,7 @@ cargar_y_añadir_MSE <- function(MSE, archivo){
   return(MSE)
 }
 
-lista_archivos <- grep(x = list.files("data"), pattern="[1-9]+", value= TRUE)
+lista_archivos <- grep(x = list.files("data"), pattern="[1-9]*_MSE.*", value= TRUE)
 for (archivo in lista_archivos){
   MSE <- cargar_y_añadir_MSE(MSE, archivo)
 }
@@ -47,6 +52,7 @@ MSE[colnames(MSE)!="Total"] <- as.data.frame(lapply(MSE[colnames(MSE)!="Total"],
 MSE <- MSE %>% 
   select(Año,"Mes de defunción", Sexo, Edad, Total)
 ```
+
 
 
 
