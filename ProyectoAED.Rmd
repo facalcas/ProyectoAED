@@ -35,7 +35,7 @@ colnames(MSE)[1] <- "Mes de defunción"
 # Función para ir concatenando los dataframes anuales
 cargar_y_añadir_MSE <- function(MSE, archivo){
   MSE_año <- read_delim(paste0("data/",archivo), 
-    delim = ";", escape_double = FALSE, trim_ws = TRUE)
+    delim = ";", escape_double = FALSE, trim_ws = TRUE, locale = locale(grouping_mark = "."))
   MSE_año$Año <- gsub(pattern = "_[^1-9]*","", x = archivo)
   MSE <- rbind(MSE,MSE_año)
   return(MSE)
@@ -52,6 +52,8 @@ MSE[colnames(MSE)!="Total"] <- as.data.frame(lapply(MSE[colnames(MSE)!="Total"],
 MSE <- MSE %>% 
   select(Año,"Mes de defunción", Sexo, Edad, Total)
 ```
+
+
 
 
 
