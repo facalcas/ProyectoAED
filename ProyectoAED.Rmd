@@ -50,13 +50,14 @@ MSE <- MSE %>%
 
 
 
+
 ```{r}
 library(readr)
 library(dplyr)
 library(stringr)
 library(purrr)
 
-rm(list=ls())
+readr::guess_encoding(file="data/2023ns.csv", n= 1000)
 
 # Se crea la función procesar_archivo_ns que hace tidy un solo archivo de ns
 
