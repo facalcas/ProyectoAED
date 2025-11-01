@@ -11,3 +11,42 @@ rm(list = ls())
 ```
 
 Proyecto AED 9 de Noviembre Grupo E
+
+
+```{r MSE}
+library(tidyverse)
+
+# Creamos dataframe base vacío
+MSE <- data.frame(
+  "Mes de defunción" = character(),
+  Sexo = character(),
+  Edad = character(),
+  Total = numeric(),
+  stringsAsFactors = FALSE
+)
+
+colnames(MSE)[1] <- "Mes de defunción"
+
+# Función para ir concatenando los dataframes anuales
+cargar_y_añadir_MSE <- function(MSE, archivo){
+  MSE_año <- read_delim(paste0("data/",archivo), 
+    delim = ";", escape_double = FALSE, trim_ws = TRUE)
+  MSE_año$Año <- gsub(pattern = "_[^1-9]*","", x = archivo)
+  MSE <- rbind(MSE,MSE_año)
+  return(MSE)
+}
+
+lista_archivos <- grep(x = list.files("data"), pattern="[1-9]+", value= TRUE)
+for (archivo in lista_archivos){
+  MSE <- cargar_y_añadir_MSE(MSE, archivo)
+}
+
+# Convertimos los datos al tipo correcto
+MSE[colnames(MSE)!="Total"] <- as.data.frame(lapply(MSE[colnames(MSE)!="Total"],as.factor))
+# Reordenamos las columnas
+MSE <- MSE %>% 
+  select(Año,"Mes de defunción", Sexo, Edad, Total)
+```
+
+
+
