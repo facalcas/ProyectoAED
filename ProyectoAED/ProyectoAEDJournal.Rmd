@@ -302,95 +302,106 @@ pacman::p_load(tidyverse,lubridate,dplyr,stringr,readr)
 ## Tidy dataset CA, Sexo y Edad
 
 ```{r}
-#cargar la ubicación del archivo
+# Cargar la ubicación del archivo
 
 archivos<-list.files("../data")
 
-#filtramos por los que terminan en _CSE.csv usando una expresion regular
-CSE<-grep("CSE\\.csv$", archivos, value = TRUE)
+# Filtramos por los que terminan en _CSE.csv usando una expresion regular
+archivos<-grep("CSE\\.csv$", archivos, value = TRUE)
 
-#generamos la ruta del archivo
+# Creamos un df vacío en el que almacenar nuestros datos tratados y limpios
+CSE_tidy<-data.frame()
 
-ruta <- paste0("../data/",CSE)
+for (CSE in archivos){
+  
+  # Generamos la ruta del archivo
 
-#cargamos el dataframe
+  ruta <- paste0("../data/",CSE)
+  
+  # Cargamos el dataframe
+  
+  encoding<-guess_encoding(ruta)[[1]][1]
+  
+  df <- read_delim(ruta, delim = ";", 
+                   escape_double = FALSE, col_types = cols(Sexo = col_character()), 
+                   locale = locale(encoding = encoding), 
+                   trim_ws = TRUE)
+  
+  names(df)[2]<-"Territorio"
+  
+  # Nos centramos solo en el ámbito Nacional
+  
+  df<-df %>%
+    filter(Nacional!="Extranjero")
+  
+  # Eliminamos la columna Nacional
+  
+  df<-df[-1]
+  
+  # Sustituímos los NAs por Nacional
+  
+  df <- df %>% replace_na(list(Territorio = "Nacional"))
+  
+  # Creamos la columna año:
+  
+  # Primero extraemos el año del nombre del archivo
+  
+  año<- sub("_.*", "", CSE) #busca el patron y lo borra, así me quedo con la fecha
+  
+  # Ahora lo pasamos a variable tipo fecha
+  
+  año<-año %>% paste0("-01-01") %>%as.Date
+  
+  df <- df %>%
+    mutate(Año = año)
+  
+  # Modificamos los nombres de las comunidades para que sea mas friendly
+  
+  df <- df %>%
+    mutate(
+      Territorio = Territorio %>%
+        # 1) Quitar espacios extremos
+        str_squish() %>%
+        # 2) Quitar prefijo numérico
+        str_remove("^\\d+\\s+") %>%
+        # 3) Quedarse con lo anterior a la primera coma
+        str_remove(",.*$") %>%
+        # 4) Casos excepcionales
+        str_replace("Balears", "Baleares")
+      
+  )
 
-encoding<-guess_encoding(ruta)[[1]][1]
-
-df <- read_delim(ruta, delim = ";", 
-                 escape_double = FALSE, col_types = cols(Sexo = col_character()), 
-                 locale = locale(encoding = encoding), 
-                 trim_ws = TRUE)
-
-names(df)[2]<-"Territorio"
-
-#Nos centramos solo en el ámbito Nacional
-
-df<-df %>%
-  filter(Nacional!="Extranjero")
-
-#Eliminamos la columna Nacional
-
-df<-df[-1]
-
-# Sustituímos los NAs por Nacional
-
-df <- df %>% replace_na(list(Territorio = "Nacional"))
-
-#Creamos la columna año:
-
-#Primero extraemos el año del nombre del archivo
-
-año<- sub("_.*", "", CSE) #busca el patron y lo borra, así me quedo con la fecha
-
-#Ahora lo pasamos a variable tipo fecha
-
-año<-año %>% paste0("-01-01") %>%as.Date
-
-df <- df %>%
-  mutate(Año = año)
-
-#Modificamos los nombres de las comunidades para que sea mas friendly
-
-df <- df %>%
-  mutate(
-    Territorio = Territorio %>%
-      # 1) Normalizar espacios
-      str_squish() %>%
-      # 2) Quitar prefijo numérico + espacio (p.ej. "03 "):
-      str_remove("^\\d+\\s+") %>%
-      # 3) Quedarse con lo anterior a la primera coma (p.ej. "Asturias, Principado de" -> "Asturias")
-      str_remove(",.*$") %>%
-      # 4) Casos excepcionales
-      str_replace("Balears", "Baleares")
+  #Modificamos Sexo, Edad de la misma forma
+  df <- df %>%
+    mutate(
+      Edad = Edad %>%
+        str_replace("Todas.*", "Todas") %>%
+        str_replace("años", "") %>%
+        str_replace("De ", "") %>%
+        str_replace("Menores de ", "<") %>%
+        str_replace(" y más", "+") %>%
+        str_replace(" a ", "-")
     
-)
+  )
 
-#Modificamos Sexo, Edad de la misma forma
-df <- df %>%
-  mutate(
-    Edad = Edad %>%
-      str_replace("Todas.*", "Todas") %>%
-      str_replace("años", "") %>%
-      str_replace("De ", "") %>%
-      str_replace("Menores de ", "<") %>%
-      str_replace(" y más", "+") %>%
-      str_replace(" a ", "-")
+  df <- df %>%
+    mutate(
+      Sexo = Sexo %>%
+        str_replace("Ambos.*", "Ambos")
     
-)
-
-df <- df %>%
-  mutate(
-    Sexo = Sexo %>%
-      str_replace("Ambos.*", "Ambos")
-    
-)
+  )
 
 
-#Ahora cabiaremos a tipo factor las otras columnas Territorio, Sexo, Edad
+  #Ahora cabiaremos a tipo factor las otras columnas Territorio, Sexo, Edad
 
-df <- df %>%
-  mutate(across(where(is.character), as.factor))
+  df <- df %>%
+    mutate(across(where(is.character), as.factor))
+  #Finalmente apilamos en un único dataframe los datos de cada año
+  
+  CSE_tidy <- CSE_tidy %>% rbind(df)
+}
+
+
 
 
 ```
