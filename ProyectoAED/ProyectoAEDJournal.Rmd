@@ -295,7 +295,7 @@ corresponding ethical approval code.
 ## Librerías necesarias
 
 ```{r}
-pacman::p_load(tidyverse,lubridate,dplyr,stringr,readr)
+pacman::p_load(tidyverse,lubridate,dplyr,stringr,readr,purrr)
 ```
 
 
@@ -400,14 +400,108 @@ for (CSE in archivos){
   
   CSE_tidy <- CSE_tidy %>% rbind(df)
 }
+```
 
 
+## Mes, Sexo y Edad
+```{r Codificacion MSE}
+guess_encoding("../data/2014_MSE.csv")
+#Tienen codificación UTF-8
+```
 
+```{r MSE}
 
-`
+# Creamos dataframe base vacío
+MSE <- data.frame(
+  "Mes de defunción" = character(),
+  Sexo = character(),
+  Edad = character(),
+  Total = numeric(),
+  stringsAsFactors = FALSE
+)
 
+colnames(MSE)[1] <- "Mes de defunción"
 
+# Función para ir concatenando los dataframes anuales
+cargar_y_añadir_MSE <- function(MSE, archivo){
+  MSE_año <- read_delim(paste0("../data/",archivo), 
+    delim = ";", escape_double = FALSE, trim_ws = TRUE, locale = locale(grouping_mark = "."))
+  MSE_año$Año <- gsub(pattern = "_[^1-9]*","", x = archivo)
+  MSE <- rbind(MSE,MSE_año)
+  return(MSE)
+}
 
+lista_archivos <- grep(x = list.files("../data"), pattern="[1-9]*_MSE.*", value= TRUE)
+for (archivo in lista_archivos){
+  MSE <- cargar_y_añadir_MSE(MSE, archivo)
+}
+
+# Convertimos los datos al tipo correcto
+MSE[colnames(MSE)!="Total"] <- as.data.frame(lapply(MSE[colnames(MSE)!="Total"],as.factor))
+
+# Reordenamos las columnas
+MSE <- MSE %>% 
+  select(Año,"Mes de defunción", Sexo, Edad, Total)
+```
+## Nacionalidad y Sexo
+
+```{r}
+readr::guess_encoding(file="../data/2023ns.csv", n= 1000)
+
+# Se crea la función procesar_archivo_ns que hace tidy un solo archivo de ns
+
+procesar_archivo_ns <- function(archivo_ns) {
+  patron_ns <- "(\\d+)ns\\.csv"
+  matches_ns <- str_match(archivo_ns, patron_ns)
+  año_extraido_ns <- as.numeric(matches_ns[1, 2])
+
+# La expresión regular para sacar el año es: (\\d+) [que significa encuentra un dígito y lo que está después de él] ns [toma también "ns" literal] \\. [toma también un . literal] csv [toma también los caracteres csv] [de esta forma identifica el patrón específico de los archivos guardados de nacionalidad-sexo ns]
+# La función str_match empareja la ruta de los archivos ns con su respectivo patrón separado por año
+# Con año_extraido_ns 
+    
+  datos_ns_limpios <- read_delim(
+    archivo_ns,
+    delim = ";",
+    escape_double = FALSE,
+    trim_ws = TRUE,
+    locale = locale(encoding = "ISO-8859-1", decimal_mark = ","),
+    col_types = cols(
+      Edad = col_character(),
+      Nacionalidad = col_character(),
+      Sexo = col_character(),
+      Total = col_number()
+      ),
+    show_col_types = FALSE
+    ) %>%
+    
+# Con esta porción del código se importan los archivos ns de la carpeta data, con el encoding adecuado, y desde aquí se le asigna las columnas su tipo adecuado. show_col_types = F es para no llenar la consola de los tipos de las columnas  
+    
+    dplyr::filter(Edad == "Todas las edades") %>%
+    dplyr::filter(Nacionalidad != "Total" & Sexo != "Ambos sexos") %>%
+    select(Nacionalidad, Sexo, Total) %>%
+    mutate(
+      Año = año_extraido_ns,
+      Nacionalidad = factor(Nacionalidad, levels = c("Española", "Extranjera", "No consta")),
+      Sexo = factor(Sexo, levels = c("Hombres", "Mujeres"))
+      ) %>%
+    select(Año, Nacionalidad, Sexo, Total)
+  return(datos_ns_limpios)
+}
+
+# Con esta porción de código se filtran las edades para que no muestre toda la segmentación sino que muestre los valores Totales (se aprovecha que desde el propio dataset original ya viene el número total de suicidios sumado), con el segundo filter se "eliminan" errores que venían en estas columnas como "Total" en Nacionalidades y "Ambos sexos" para de esta forma mostrar las 3 tipos de nacionalidad que interesa y los dos sexos. Se seleccionan las columnas que nos interesan, con el mutate se crea la columna Año con el año_extraido_ns definido en pasos anteriores, y las columnas Nacionalidad y Sexo se hacen factor con los valores respectivos. Con el último select se ordenan las columnas para que sea más fácil de entender al mirar la tabla. 
+
+lista_archivos_ns <- list.files(
+  path = "../data/",
+  pattern = "\\d+ns\\.csv$",
+  full.names = TRUE
+)
+
+# Con esta porción de código se crea una lista con los documentos que hay en la carpeta data que cumplen con el patrón de ns (explicado anteriormente) y toma tods esos archivos.
+
+datos_ns_tidy <- map_dfr(lista_archivos_ns, procesar_archivo_ns)
+
+# Se hace uso de una función de purrr que es map_dfr y lo que hace es que a la lista de archivos que cumplen con el patrón de ns les aplica la función de hacerlos tidy, y lo que hace es crear dataframes individuales que concatena en un gran dataframe con todos los archivos en formato tidy en 1
+```
 
 # Results
 
