@@ -370,6 +370,15 @@ for (CSE in archivos){
 # Reordenamos las columnas
 CSE_tidy <- CSE_tidy %>% 
   select(Año,Territorio, Sexo, Edad, Total)
+
+# Para graficar la pirámide de población
+CSE_graf <- CSE_tidy %>%
+  # Para que un sexo se dibuje “hacia la izquierda” y otro hacia la derecha, una de las poblaciones debe ser negativa:
+  mutate(Total = ifelse(Sexo == "Hombres", -Total, Total)) %>%
+  filter(Sexo != "Ambos") %>%
+  filter(Edad != "Todas") %>%
+  filter(Territorio == "Nacional") %>%
+  select(Año,Sexo,Edad,Total)
 ```
 
 
@@ -475,6 +484,104 @@ datos_ns_tidy <- map_dfr(lista_archivos_ns, procesar_archivo_ns)
 ```
 
 # Results
+
+```{r}
+#Cargamos librerías para graficar
+pacman::p_load(ggplot2,plotly)
+```
+
+
+##Grafica Piramide
+
+```{r}
+library(ggplot2)
+
+años<-levels(CSE_graf$Año)
+max_global <- max(abs(CSE_graf$Total))
+
+for (año in años){
+  
+  data <- CSE_graf %>% 
+    filter(Año == año)
+  
+
+  Grafico <-ggplot(data, aes(x = Edad, y = Total, fill = Sexo)) +
+    geom_col(width = 0.9) +
+    coord_flip() +
+    scale_y_continuous(labels = abs, limits = c(-max_global, max_global)) +
+    labs(
+      title = paste("Pirámide de suicidios",año),
+      x = "Edad",
+      y = "Suicidios",
+      fill = "Sexo"
+    ) +
+    theme_grey()
+  
+  print(Grafico)
+ 
+}
+
+
+```
+
+```{r}
+brks <- pretty(c(0, max_global))
+tickvals <- c(-brks, brks)        # valores a ambos lados
+ticktext <- c(brks, brks)         # etiquetas siempre positivas
+
+p <- plot_ly(
+  data = CSE_graf,
+  x = ~Total, y = ~Edad,
+  color = ~Sexo,
+  colors = c("Hombres" = "#E86E34", "Mujeres" = "#5E7CE2"),
+  type = "bar", orientation = "h",
+  frame = ~Año,
+  hovertemplate = "Edad: %{y}<br>Suicidios: %{customdata}<extra></extra>",
+  customdata = ~abs(Total)
+) %>%
+  layout(
+    barmode = "relative",
+    # ----- Título centrado + más espacio arriba -----
+    title = list(text = "Pirámide de suicidios", x = 0.5, xanchor = "center",
+                 font = list(size = 22)),
+    margin = list(t = 90),                # más margen superior para el título
+
+    # ----- Ejes -----
+    xaxis = list(
+      title = "Suicidios",
+      range = c(-(max_global+50), (max_global+50)),
+      tickvals = tickvals,
+      ticktext = ticktext,
+      zeroline = FALSE                    # quitamos la zeroline para usar la nuestra
+    ),
+    yaxis = list(title = "Edad"),
+
+    # ----- Leyenda dentro de la trama -----
+    legend = list(
+      x = 0.98, y = 0.98,                 # esquina sup. derecha
+      xanchor = "right", yanchor = "top",
+      bgcolor = "rgba(255,255,255,0.75)", # caja semitransparente
+      bordercolor = "rgba(0,0,0,0.2)",
+      borderwidth = 1,
+      orientation = "v",
+      font = list(size = 12)
+    ),
+
+    # ----- (Opcional) línea vertical en x=0 -----
+    shapes = list(list(
+      type = "line", x0 = 0, x1 = 0, xref = "x",
+      y0 = 0, y1 = 1, yref = "paper",
+      line = list(color = "rgba(0,0,0,0.6)", width = 1)
+    )),
+
+    bargap = 0.15
+  ) %>%
+  animation_slider(currentvalue = list(prefix = "Año: ")) %>%
+  animation_opts(frame = 600, easing = "linear", redraw = FALSE)
+
+p
+```
+
 
 
 
