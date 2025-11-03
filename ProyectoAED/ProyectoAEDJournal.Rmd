@@ -313,9 +313,9 @@ for (CSE in archivos){
   
   año<- sub("_.*", "", CSE) #busca el patron y lo borra, así me quedo con la fecha
   
-  # Ahora lo pasamos a variable tipo fecha
+  # Ahora lo pasamos a variable tipo factor
   
-  año<-año %>% paste0("-01-01") %>%as.Date
+  año<-año %>% as.factor()
   
   df <- df %>%
     mutate(Año = año)
@@ -365,6 +365,11 @@ for (CSE in archivos){
   
   CSE_tidy <- CSE_tidy %>% rbind(df)
 }
+
+
+# Reordenamos las columnas
+CSE_tidy <- CSE_tidy %>% 
+  select(Año,Territorio, Sexo, Edad, Total)
 ```
 
 
