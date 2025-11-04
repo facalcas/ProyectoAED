@@ -336,7 +336,7 @@ for (CSE in archivos){
       
   )
 
-  #Modificamos Sexo, Edad de la misma forma
+  # Modificamos Sexo, Edad de la misma forma
   df <- df %>%
     mutate(
       Edad = Edad %>%
@@ -357,11 +357,11 @@ for (CSE in archivos){
   )
 
 
-  #Ahora cabiaremos a tipo factor las otras columnas Territorio, Sexo, Edad
+  # Ahora cabiaremos a tipo factor las otras columnas Territorio, Sexo, Edad
 
   df <- df %>%
     mutate(across(where(is.character), as.factor))
-  #Finalmente apilamos en un único dataframe los datos de cada año
+  # Finalmente apilamos en un único dataframe los datos de cada año
   
   CSE_tidy <- CSE_tidy %>% rbind(df)
 }
@@ -379,6 +379,12 @@ CSE_graf <- CSE_tidy %>%
   filter(Edad != "Todas") %>%
   filter(Territorio == "Nacional") %>%
   select(Año,Sexo,Edad,Total)
+# Para graficar el mapa
+CSE_map <- CSE_tidy %>%
+  filter(Sexo == "Ambos") %>%
+  filter(Edad == "Todas") %>%
+  filter(Territorio != "Nacional") %>%
+  select(Año,Territorio,Total)
 ```
 
 
@@ -487,7 +493,7 @@ datos_ns_tidy <- map_dfr(lista_archivos_ns, procesar_archivo_ns)
 
 ```{r}
 #Cargamos librerías para graficar
-pacman::p_load(ggplot2,plotly)
+pacman::p_load(ggplot2,plotly,mapSpain,sf,scales)
 ```
 
 
@@ -582,6 +588,26 @@ p <- plot_ly(
 p
 ```
 
+## Grafica Mapa
+
+```{r}
+ccaa<-esp_get_ccaa(moveCAN = FALSE) %>% st_as_sf()
+
+  # Modificamos los nombres de las comunidades para que sea mas friendly
+  
+  ccaa<-ccaa %>%
+    mutate(
+      Territorio = ine.ccaa.name %>%
+        # 1) Quitar espacios extremos
+        str_squish() %>%
+        # 2) Quitar prefijo numérico
+        str_remove("^\\d+\\s+") %>%
+        # 3) Quedarse con lo anterior a la primera coma
+        str_remove(",.*$") %>%
+        # 4) Casos excepcionales
+        str_replace("Balears", "Baleares")
+    )
+```
 
 
 
