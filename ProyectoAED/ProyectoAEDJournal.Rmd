@@ -471,7 +471,59 @@ datos_ns_tidy <- map_dfr(lista_archivos_ns, procesar_archivo_ns)
 
 # Results
 
+## Graficas Lineas, Nacionalidades
 
+```{r}
+library(ggplot2)
+library(dplyr)
+library(plotly)
+
+suicidios_por_nacionalidad<-datos_ns_tidy%>%
+  group_by(Año,Nacionalidad)%>%
+  summarise(Total_Suicidios=sum(Total))
+
+suicidios_por_sexo<-datos_ns_tidy%>%
+  group_by(Año,Sexo)%>%
+  summarise(Total_Suicidios=sum(Total))
+
+suicidios_por_año<-datos_ns_tidy%>%
+  group_by(Año)%>%
+  summarise(Total_Suicidios=sum(Total))
+
+
+gr_por_año<-ggplot(suicidios_por_año, aes(x=Año, y=Total_Suicidios, group=1)) +
+  geom_line(color="blue") +
+  geom_point(color="blue") +
+  labs(title = "Evolución del Total de Suicidios en España (2014-2023)",
+       y = "Número de Suicidios",
+       x = "Año") +
+  theme_minimal()
+
+# En el código de este gráfico es importante el group=1 porque como los años están como factor, para que los tome cada uno como un valor del eje
+
+ggplotly(gr_por_año)
+
+gr_por_sexo<-ggplot(suicidios_por_sexo,aes(x=Año, y=Total_Suicidios, fill=Sexo)) +
+  geom_col(position = "dodge") +
+  labs(title = "Suicidios en España por Sexo en el periodo 2014-2023",
+       x="Año",
+       y="Número de Suicidios")+
+  scale_fill_manual(values = c("Hombres" = "skyblue", "Mujeres" = "pink")) +
+  theme_minimal()
+
+ggplotly(gr_por_sexo)
+
+gr_li_por_nacionalidad<-ggplot(suicidios_por_nacionalidad,aes(x=Año,y=Total_Suicidios,colour=Nacionalidad,group=Nacionalidad))+
+  geom_line()+
+  geom_point()+
+  labs(title="Suicidios en España por Nacionalidad en el periodo 2024-2023",
+       x="Año",
+       y="Número de Suicidios")+
+  theme_minimal()
+
+ggplotly(gr_li_por_nacionalidad)
+
+```
 
 ## Subsection Heading Here
 
