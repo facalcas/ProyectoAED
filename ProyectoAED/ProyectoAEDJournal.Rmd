@@ -663,7 +663,6 @@ for (año in años) {
 ```
 ```{r}
 
-
 # Escala fija (opcional) para que todos los años compartan el mismo máximo
 zmax <- max(CSE_map$Total, na.rm = TRUE)
 
