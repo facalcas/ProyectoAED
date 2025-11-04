@@ -471,11 +471,111 @@ datos_ns_tidy <- map_dfr(lista_archivos_ns, procesar_archivo_ns)
 
 # Results
 
+## Graficos Calendario
 
+```{r grafico-defunciones a lo largo del tiempo}
+library(ggplot2)
+MSE_evolucion <-MSE %>% 
+  filter(`Mes de defunción`=="Todos los meses", Sexo=="Ambos sexos", Edad=="Todas las edades")
+
+MSE_evolucion %>% 
+  ggplot(aes(x=Año, y=Total)) + geom_point() + geom_line(group=1)
+```
+```{r}
+#Quitamos totales
+MSE_sin_totales <- MSE %>% 
+  filter(`Mes de defunción`!="Todos los meses", Sexo!="Ambos sexos",Edad!="Todas las edades")
+```
+
+
+```{r boxplot por meses MSE}
+p<-MSE %>% 
+  filter(`Mes de defunción`!="Todos los meses", Sexo!="Ambos sexos", Edad!="Todas las edades") %>% 
+  group_by(`Mes de defunción`,Año) %>% 
+  summarise(Total_sum=sum(Total)) %>% 
+  ggplot(aes(x=`Mes de defunción`, y=Total_sum))+ geom_boxplot()
+
+p
+ggplotly(p)
+```
+```{r}
+library(plotly)
+for (año in unique(MSE$Año)) {
+  
+  df_year <- MSE_sin_totales %>% 
+    filter(Año == año) %>%
+    group_by(`Mes de defunción`, Sexo) %>% 
+    summarise(Total_sum = sum(Total), .groups = "drop")
+  
+  p <- ggplot(df_year, aes(x = `Mes de defunción`, y=Total_sum)) +
+        geom_bar(stat="identity", aes(fill=Sexo), position="dodge") +
+        ggtitle(paste("Año:", año))
+  
+  print(ggplotly(p))
+}
+
+```
+```{r}
+library(plotly)
+library(dplyr)
+
+anios <- unique(MSE_sin_totales$Año)
+sexos <- unique(MSE_sin_totales$Sexo)
+
+fig <- plot_ly()
+
+# --- Generar trazas por AÑO × SEXO ---
+for (a in seq_along(anios)) {
+  for (s in seq_along(sexos)) {
+    
+    df <- MSE_sin_totales %>% 
+      filter(Año == anios[a], Sexo == sexos[s])
+    
+    fig <- fig %>%
+      add_bars(
+        data = df,
+        x = ~`Mes de defunción`,
+        y = ~Total,
+        name = paste(anios[a], sexos[s]),
+        visible = ifelse(a == 1, TRUE, FALSE)
+      )
+  }
+}
+
+# Cantidad de trazas por año
+trazas_por_anio <- length(sexos)
+
+fig <- fig %>%
+  layout(
+    barmode = "group",
+    updatemenus = list(
+      list(
+        type = "dropdown",
+        buttons = lapply(seq_along(anios), function(a){
+          # vector de visibilidad, uno por traza
+          visibles <- rep(FALSE, length(anios) * trazas_por_anio)
+          
+          # activar las trazas del año a
+          inicio <- (a - 1) * trazas_por_anio + 1
+          fin <- inicio + trazas_por_anio - 1
+          visibles[inicio:fin] <- TRUE
+          
+          list(
+            method = "update",
+            label = anios[a],
+            args = list(list(visible = visibles))
+          )
+        })
+      )
+    )
+  )
+
+fig
+
+```
 
 ## Subsection Heading Here
 
-.
 
 ### Subsubsection Heading Here
 
