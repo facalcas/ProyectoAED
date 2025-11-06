@@ -468,7 +468,7 @@ MSE <- MSE %>%
 
 ## Nacionalidad y Sexo
 
-```{r}
+```{r, echo=FALSE}
 readr::guess_encoding(file="../data/2023ns.csv", n= 1000)
 
 # Se crea la función procesar_archivo_ns que hace tidy un solo archivo de ns
@@ -528,13 +528,13 @@ datos_ns_tidy <- map_dfr(lista_archivos_ns, procesar_archivo_ns)
 
 Una vez importada los datos de suicidios en España distribuidos por la nacionalidad de las personas, se cuenta con un dateframe que cuenta con cuatro variables siendo estas:
 
-```{r}
-colnames(datos_ns_tidy)
+```{r, echo=FALSE}
+print(colnames(datos_ns_tidy))
 ```
 
 La clase de estas variable son:
-```{r}
-str(datos_ns_tidy)
+```{r, echo=FALSE}
+print(str(datos_ns_tidy))
 ```
 
 Se tiene que la variable Año es un factor con niveles de 2014 a 2023, la variable Nacionalidad de las personas se trata como un factor de tres niveles siendo estos: Española, Extranjera y No Consta. Siendo el nivel "No consta" como personas que se han suicidado pero no se pudo comprobar la nacionalidad de la persona. 
@@ -721,29 +721,7 @@ gr_por_año<-ggplot(suicidios_por_año, aes(x=Año, y=Total_Suicidios, group=1))
 
 print(gr_por_año)
 
-gr_pastel_nacionalidad<-ggplot(suicidios_pastel_nacionalidad,aes(x="",y=Total_Suicidios,fill = Nacionalidad))+
-  geom_col(width=1)+
-  coord_polar(theta="y")+
-  ggrepel::geom_label_repel(
-    aes(label = Etiqueta_Porcentaje),
-    position = position_stack(vjust = 0.5),
-    show.legend = FALSE,
-    segment.color = "grey50"
-  ) +  
-  labs(
-    title = "Proporción Total de Suicidios por Nacionalidad (2014-2023)",
-    fill = "Nacionalidad",
-    x = NULL,
-    y = NULL
-  ) +
-  theme_void() +
-  theme(
-    plot.title = element_text(hjust = 0.5, size = 16),
-    legend.title = element_text(size = 12),
-    legend.text = element_text(size = 10)
-  )
 
-print(gr_pastel_nacionalidad)
 
 # gra_barras_nac<-plot_ly(
 #   data=suicidios_por_nacionalidad,
