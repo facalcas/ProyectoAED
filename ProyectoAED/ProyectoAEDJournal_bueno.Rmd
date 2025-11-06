@@ -292,16 +292,16 @@ pacman::p_load(tidyverse,lubridate,dplyr,stringr,readr,purrr)
 ```
 
 
-## Análisis de los datos
+## Inspección de los datos
 
 ### Mes de defunción sexo y edad
 ## Mes, Sexo y Edad
-```{r Codificacion MSE}
+```{r Codificacion MSE, echo=FALSE}
 guess_encoding("../data/2014_MSE.csv")
 #Tienen codificación UTF-8
 ```
 
-```{r MSE}
+```{r MSE, echo=FALSE}
 
 # Creamos dataframe base vacío
 MSE <- data.frame(
@@ -331,17 +331,78 @@ for (archivo in lista_archivos){
 # Convertimos los datos al tipo correcto
 MSE[colnames(MSE)!="Total"] <- as.data.frame(lapply(MSE[colnames(MSE)!="Total"],as.factor))
 
+#Renombramos variable Total para que sea más explicativa
+
+colnames(MSE)[colnames(MSE)=="Total"] <- "Total_suicidios"
+
 # Reordenamos las columnas
 MSE <- MSE %>% 
-  select(Año,"Mes de defunción", Sexo, Edad, Total)
+  select(Año,"Mes de defunción", Sexo, Edad, Total_suicidios)
 ```
 Tras transformar nuestro dataset a formato `tidy` y haber concatenado los distintos años, vamos a analizar un poco cada una de las variables.
 
 Nuestras variables en este conjunto de datos son las siguientes:
 
-```{r, echo=FALSE}
-colnames()
+```{r, echo = FALSE}
+str(MSE)
 ```
+Vemos pues que disponemos de 5 variables llamadas `Año`, `Mes de defunción`,`Sexo`,`Edad` y `Total_suicidios`. Los nombres de estas vemos que son suficientemente representativos, y todas son de tipo factor excepto la de `Total_suicidios` que es numérica. Nótese que la variable año se ha codificado como factor en lugar de fecha porque únicamente sirve como representación categórica para clasificar anualmente los datos.
+
+Vamos a inspeccionar un poco cada una de las variables.
+
+En cuanto al `Año`, si miramos los distintos valores que puede tomar vemos que efectivamente tenemos datos de los años desde 2014 hasta 2023.
+
+```{r, echo=FALSE}
+levels(MSE$Año)
+```
+Por otro lado, como cabría esperar la variable `Mes de defunción` dispone de todos los meses del año, pero vemos una particularidad, tenemos un agregado de "Todos los meses":
+
+
+En cuanto al `Sexo` disponemos de "Hombres" y "Mujeres" y, además, de nuevo tenemos un agregado de "Ambos sexos".
+
+```{r, echo=FALSE}
+levels(MSE$Sexo)
+```
+
+Para la última variable tipo factor (`Edad`) tenemos las siguientes categorías:
+
+```{r, echo=FALSE}
+levels(MSE$Edad)
+```
+
+Como podemos observar, tenemos también un agregado de "Todas las edades".
+
+En vista de los datos tipo factor, realizamos una reordenación de los meses y las edades, así como una eliminación de las filas correspondientes a los registros "Ambos sexos","Todas las edades" y "Todos los meses".
+
+```{r, echo=FALSE}
+library(tidyverse)
+MSE$`Mes de defunción` <- factor(MSE$`Mes de defunción`, levels=c("enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre", "Todos los meses"))
+
+MSE$Edad <- factor(MSE$Edad, levels=c("Todas las edades","Menores de 15 años","De 15 a 29 años","De 30 a 39 años","De 40 a 44 años","De 45 a 49 años","De 50 a 54 años","De 55 a 59 años","De 60 a 64 años","De 65 a 69 años","De 70 a 74 años","De 75 a 79 años","De 80 a 84 años","De 85 a 89 años","De 90 a 94 años","De 95 años y más"))
+MSE_sin_totales <- MSE %>% 
+  filter(`Mes de defunción`!="Todos los meses", Sexo!="Ambos sexos", Edad!="Todas las edades")
+```
+
+Por último, la variable `Total_suicidios` hemos dicho que es una variable numérica. Explorémosla un poco numéricamente. Para ello, saquemos estadísticos por mes.
+
+```{r, echo=FALSE}
+summary(MSE_sin_totales$Total_suicidios)
+```
+Como vemos, hay meses, edades y sexos donde no se suicida nadie, y el máximo son 45. Así mismo, de media entre todas las edades, sexos y meses se suicidan 10.63 personas.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -593,7 +654,7 @@ MSE_evolucion <-MSE %>%
   filter(`Mes de defunción`=="Todos los meses", Sexo=="Ambos sexos", Edad=="Todas las edades")
 
 MSE_evolucion %>% 
-  ggplot(aes(x=Año, y=Total)) + geom_point() + geom_line(group=1)
+  ggplot(aes(x=Año, y=Total_suicidios)) + geom_point() + geom_line(group=1)
 ```
 ```{r}
 #Quitamos totales
@@ -607,7 +668,7 @@ library(plotly)
 p<-MSE %>% 
   filter(`Mes de defunción`!="Todos los meses", Sexo!="Ambos sexos", Edad!="Todas las edades") %>% 
   group_by(`Mes de defunción`,Año) %>% 
-  summarise(Total_sum=sum(Total)) %>% 
+  summarise(Total_sum=sum(Total_suicidios)) %>% 
   ggplot(aes(x=`Mes de defunción`, y=Total_sum))+ geom_boxplot()
 
 p
@@ -620,7 +681,7 @@ for (año in unique(MSE$Año)) {
   df_year <- MSE_sin_totales %>% 
     filter(Año == año) %>%
     group_by(`Mes de defunción`, Sexo) %>% 
-    summarise(Total_sum = sum(Total), .groups = "drop")
+    summarise(Total_sum = sum(Total_suicidios), .groups = "drop")
   
   p <- ggplot(df_year, aes(x = `Mes de defunción`, y=Total_sum)) +
         geom_bar(stat="identity", aes(fill=Sexo), position="dodge") +
