@@ -295,10 +295,54 @@ pacman::p_load(tidyverse,lubridate,dplyr,stringr,readr,purrr)
 ## Análisis de los datos
 
 ### Mes de defunción sexo y edad
+## Mes, Sexo y Edad
+```{r Codificacion MSE}
+guess_encoding("../data/2014_MSE.csv")
+#Tienen codificación UTF-8
+```
 
+```{r MSE}
+
+# Creamos dataframe base vacío
+MSE <- data.frame(
+  "Mes de defunción" = character(),
+  Sexo = character(),
+  Edad = character(),
+  Total = numeric(),
+  stringsAsFactors = FALSE
+)
+
+colnames(MSE)[1] <- "Mes de defunción"
+
+# Función para ir concatenando los dataframes anuales
+cargar_y_añadir_MSE <- function(MSE, archivo){
+  MSE_año <- read_delim(paste0("../data/",archivo), 
+    delim = ";", escape_double = FALSE, trim_ws = TRUE, locale = locale(grouping_mark = "."))
+  MSE_año$Año <- gsub(pattern = "_[^1-9]*","", x = archivo)
+  MSE <- rbind(MSE,MSE_año)
+  return(MSE)
+}
+
+lista_archivos <- grep(x = list.files("../data"), pattern="[1-9]*_MSE.*", value= TRUE)
+for (archivo in lista_archivos){
+  MSE <- cargar_y_añadir_MSE(MSE, archivo)
+}
+
+# Convertimos los datos al tipo correcto
+MSE[colnames(MSE)!="Total"] <- as.data.frame(lapply(MSE[colnames(MSE)!="Total"],as.factor))
+
+# Reordenamos las columnas
+MSE <- MSE %>% 
+  select(Año,"Mes de defunción", Sexo, Edad, Total)
+```
 Tras transformar nuestro dataset a formato `tidy` y haber concatenado los distintos años, vamos a analizar un poco cada una de las variables.
 
 Nuestras variables en este conjunto de datos son las siguientes:
+
+```{r, echo=FALSE}
+colnames()
+```
+
 
 
 
@@ -425,46 +469,7 @@ CSE_map <- CSE_tidy %>%
 ```
 
 
-## Mes, Sexo y Edad
-```{r Codificacion MSE}
-guess_encoding("../data/2014_MSE.csv")
-#Tienen codificación UTF-8
-```
 
-```{r MSE}
-
-# Creamos dataframe base vacío
-MSE <- data.frame(
-  "Mes de defunción" = character(),
-  Sexo = character(),
-  Edad = character(),
-  Total = numeric(),
-  stringsAsFactors = FALSE
-)
-
-colnames(MSE)[1] <- "Mes de defunción"
-
-# Función para ir concatenando los dataframes anuales
-cargar_y_añadir_MSE <- function(MSE, archivo){
-  MSE_año <- read_delim(paste0("../data/",archivo), 
-    delim = ";", escape_double = FALSE, trim_ws = TRUE, locale = locale(grouping_mark = "."))
-  MSE_año$Año <- gsub(pattern = "_[^1-9]*","", x = archivo)
-  MSE <- rbind(MSE,MSE_año)
-  return(MSE)
-}
-
-lista_archivos <- grep(x = list.files("../data"), pattern="[1-9]*_MSE.*", value= TRUE)
-for (archivo in lista_archivos){
-  MSE <- cargar_y_añadir_MSE(MSE, archivo)
-}
-
-# Convertimos los datos al tipo correcto
-MSE[colnames(MSE)!="Total"] <- as.data.frame(lapply(MSE[colnames(MSE)!="Total"],as.factor))
-
-# Reordenamos las columnas
-MSE <- MSE %>% 
-  select(Año,"Mes de defunción", Sexo, Edad, Total)
-```
 
 ## Nacionalidad y Sexo
 
@@ -721,29 +726,7 @@ gr_por_año<-ggplot(suicidios_por_año, aes(x=Año, y=Total_Suicidios, group=1))
 
 print(gr_por_año)
 
-gr_pastel_nacionalidad<-ggplot(suicidios_pastel_nacionalidad,aes(x="",y=Total_Suicidios,fill = Nacionalidad))+
-  geom_col(width=1)+
-  coord_polar(theta="y")+
-  ggrepel::geom_label_repel(
-    aes(label = Etiqueta_Porcentaje),
-    position = position_stack(vjust = 0.5),
-    show.legend = FALSE,
-    segment.color = "grey50"
-  ) +  
-  labs(
-    title = "Proporción Total de Suicidios por Nacionalidad (2014-2023)",
-    fill = "Nacionalidad",
-    x = NULL,
-    y = NULL
-  ) +
-  theme_void() +
-  theme(
-    plot.title = element_text(hjust = 0.5, size = 16),
-    legend.title = element_text(size = 12),
-    legend.text = element_text(size = 10)
-  )
 
-print(gr_pastel_nacionalidad)
 
 # gra_barras_nac<-plot_ly(
 #   data=suicidios_por_nacionalidad,
