@@ -364,6 +364,25 @@ for (CSE in archivos){
   #Finalmente apilamos en un único dataframe los datos de cada año
   
   CSE_tidy <- CSE_tidy %>% rbind(df)
+  
+  # Reordenamos las columnas
+CSE_tidy <- CSE_tidy %>% 
+  select(Año,Territorio, Sexo, Edad, Total)
+
+# Para graficar la pirámide de población
+CSE_graf <- CSE_tidy %>%
+  # Para que un sexo se dibuje “hacia la izquierda” y otro hacia la derecha, una de las poblaciones debe ser negativa:
+  mutate(Total = ifelse(Sexo == "Hombres", -Total, Total)) %>%
+  filter(Sexo != "Ambos") %>%
+  filter(Edad != "Todas") %>%
+  filter(Territorio == "Nacional") %>%
+  select(Año,Sexo,Edad,Total)
+# Para graficar el mapa
+CSE_map <- CSE_tidy %>%
+  filter(Sexo == "Ambos") %>%
+  filter(Edad == "Todas") %>%
+  filter(Territorio != "Nacional") %>%
+  select(Año,Territorio,Total)
 }
 ```
 
