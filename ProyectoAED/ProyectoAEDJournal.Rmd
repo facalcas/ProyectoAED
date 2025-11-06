@@ -610,7 +610,7 @@ gr_por_año<-ggplot(suicidios_por_año, aes(x=Año, y=Total_Suicidios, group=1))
 
 # En el código de este gráfico es importante el group=1 porque como los años están como factor, para que los tome cada uno como un valor del eje
 
-#ggplotly(gr_por_año)
+ggplotly(gr_por_año)
 
 gr_pastel_nacionalidad<-ggplot(suicidios_pastel_nacionalidad,aes(x="",y=Total_Suicidios,fill = Nacionalidad))+
   geom_col(width=1)+
