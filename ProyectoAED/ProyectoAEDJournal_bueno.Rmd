@@ -339,16 +339,14 @@ Tras transformar nuestro dataset a formato `tidy` y haber concatenado los distin
 
 Nuestras variables en este conjunto de datos son las siguientes:
 
-```{r, echo=FALSE}
-colnames()
-```
+
 
 
 
 
 ## Tidy dataset CA, Sexo y Edad
 
-```{r}
+```{r, echo=FALSE}
 # Cargar la ubicación del archivo
 
 archivos<-list.files("../data")
@@ -370,8 +368,8 @@ for (CSE in archivos){
   encoding<-guess_encoding(ruta)[[1]][1]
   
   df <- read_delim(ruta, delim = ";", 
-                   escape_double = FALSE, col_types = cols(Sexo = col_character()), 
-                   locale = locale(encoding = encoding), 
+                   escape_double = FALSE, col_types = cols(Sexo = col_character(),Total=col_number()), 
+                   locale = locale(encoding = encoding,grouping_mark=".",decimal_mark = ","), 
                    trim_ws = TRUE)
   
   names(df)[2]<-"Territorio"
@@ -393,11 +391,11 @@ for (CSE in archivos){
   
   # Primero extraemos el año del nombre del archivo
   
-  año<- sub("_.*", "", CSE) #busca el patron y lo borra, así me quedo con la fecha
+  año_texto<- sub("_.*", "", CSE) #busca el patron y lo borra, así me quedo con la fecha
   
-  # Ahora lo pasamos a variable tipo fecha
+  # Ahora lo pasamos a variable tipo factor
   
-  año<-año %>% paste0("-01-01") %>%as.Date
+  año<-factor(año_texto, levels = 2014:2023)
   
   df <- df %>%
     mutate(Año = año)
@@ -437,6 +435,13 @@ for (CSE in archivos){
         str_replace("Ambos.*", "Ambos")
     
   )
+  
+  df <- df %>%
+    filter(
+      Territorio != "Nacional",
+      Sexo != "Ambos",
+      Edad != "Todas"
+    )
 
 
   #Ahora cabiaremos a tipo factor las otras columnas Territorio, Sexo, Edad
@@ -466,6 +471,25 @@ CSE_map <- CSE_tidy %>%
   filter(Territorio != "Nacional") %>%
   select(Año,Territorio,Total)
 }
+```
+
+Una vez importado el conjunto de datos de los suicidios repartidos por comunidad autónoma y su respectiva transformación a un conjunto en formato tidy, el resultante es un dataframe con las siguientes variables:
+
+```{r, echo=FALSE}
+colnames(CSE_tidy)
+```
+La clase de estas variables es la siguiente:
+
+```{r, echo=FALSE}
+str(CSE_tidy)
+```
+Siendo la variable `Año` un factor con los años de 2014 a 2023, la variable `Territorio` un factor con las 19 Comunidades Autónomas de España, incluyendo las ciudades autónomas, y un Total nacional, la variable `Sexo` un factor con dos niveles siendo estos Hombres y Mujeres; la variable `Edad` cuenta con 15 niveles siendo estos los siguientes:
+```{r, echo=FALSE}
+levels(CSE_tidy$Edad)
+```
+Finalmente la variable `Total` muestra el número de suicidios presentados en bajo las condiciones anteriormente explicadas. Se verifica la presencia de valores ausentes en la variable `Total` con el siguiente resultado:
+```{r, echo=FALSE}
+sum(is.na(CSE_tidy$Total))
 ```
 
 
@@ -542,9 +566,9 @@ La clase de estas variable son:
 print(str(datos_ns_tidy))
 ```
 
-Se tiene que la variable Año es un factor con niveles de 2014 a 2023, la variable Nacionalidad de las personas se trata como un factor de tres niveles siendo estos: Española, Extranjera y No Consta. Siendo el nivel "No consta" como personas que se han suicidado pero no se pudo comprobar la nacionalidad de la persona. 
+Se tiene que la variable `Año` es un factor con niveles de 2014 a 2023, la variable `Nacionalidad` de las personas se trata como un factor de tres niveles siendo estos: Española, Extranjera y No Consta. Siendo el nivel "No consta" como personas que se han suicidado pero no se pudo comprobar la nacionalidad de la persona. 
 
-```{r}
+```{r, echo=FALSE}
 suicidios_barras_nacionalidad<-datos_ns_tidy%>%
   group_by(Nacionalidad)%>%
   summarise(Total_Suicidios=sum(Total),.groups="drop")%>%
@@ -580,7 +604,7 @@ print(gr_barras_nacionalidad)
 
 Como se puede observar en este gráfico, la proporción de datos de suicidios de personas de las que no se cuenta la nacionalidad es sumamente bajo. Por esta razón se prescindirán de estos registros para el análisis posterior de los datos segmentados por la nacionalidad de las personas.  
 
-La variable Sexo cuenta con niveles Hombre y Mujer, y el número de suicidios se muestra en la variable Total y es de tipo numérica.
+La variable `Sexo` cuenta con niveles Hombre y Mujer, y el número de suicidios se muestra en la variable `Total` y es de tipo numérica.
 Se tiene un total de 60 datos, donde se muestran el total de suicidios registrados por año, y la información dividida por la nacionalidad de las personas. 
 
 # Results
