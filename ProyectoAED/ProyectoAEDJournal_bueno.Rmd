@@ -268,16 +268,38 @@ knitr::kable(rticles::string_to_table(mdpi_journals, 8),
 
 # Introduction
 
-El análisis de los suicidios constituye una tema de gran relevancia social y de salud pública, ya que permite comprender mejor los factores que influyen en este fenómeno y orientar estrategias de prevención más efectivas. En este estudio se reúne información detallada de suicidios en España 
+El análisis de los suicidios constituye una tema de gran relevancia social y de salud pública, ya que permite comprender mejor los factores que influyen en este fenómeno y orientar estrategias de prevención más efectivas. En este estudio se reúne información detallada de suicidios en España clasificados según diferentes factores tales como la edad, el sexo, la nacionalidad y la comunidad autónoma.
+
+A través de la exploración de dichas variables trataremos de encontrar patrones, tendencias o posibles grupos de riesgos. Este estudio tiene el objetivo no solo de describir los datos sino también de encontrar relaciones entre ellas y así servir de ayuda para tomar medidas de prevención.
 
 # Materials and Methods
 
+Para nuestro caso de estudio, hemos obtenido los datos de suicidios proporcionados por el Instituto Nacional de Estadística (INE).
+En particular hemos importado los datos de suicidios de 2014 a 2023 divididos en 3 datasets.
+
+Uno de ellos contiene un desglose por sexo, edad y mes de defunción; otro de ellos añade el desglose de la nacionalidad; y el último de ellos añade la comunidad autónoma.
+
+Dichos datasets provenían de archivos tipo excels distintos (uno por año) que vienen en formato no tidy y que previamente a todo el tratamiento se transformarán a formato tidy y se concatenarán.
+
+Posteriormente, se realizará una inspección de cada una de las variables para entender nuestros conjuntos de datos y se obtendrán descripciones gráficas del número de suicidios, relativizándolas cuando se considere a través de datasets de población obtenidos también en el INE.
+
+Por último, veremos si existe alguna relación entre alguno de nuestros factores y el número total de suicidios.
 
 ## Librerías necesarias
 
 ```{r}
 pacman::p_load(tidyverse,lubridate,dplyr,stringr,readr,purrr)
 ```
+
+
+## Análisis de los datos
+
+### Mes de defunción sexo y edad
+
+Tras transformar nuestro dataset a formato `tidy` y haber concatenado los distintos años, vamos a analizar un poco cada una de las variables.
+
+Nuestras variables en este conjunto de datos son las siguientes:
+
 
 
 ## Tidy dataset CA, Sexo y Edad
