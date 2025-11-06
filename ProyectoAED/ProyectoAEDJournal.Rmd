@@ -667,6 +667,219 @@ gra_barras_nac<-plot_ly(
 print(gra_barras_nac)
 ```
 
+```{r}
+#Cargamos librerías para graficar
+pacman::p_load(ggplot2,plotly,mapSpain,sf,scales)
+```
+
+
+##Grafica Piramide
+
+```{r}
+library(ggplot2)
+
+años<-levels(CSE_graf$Año)
+max_global <- max(abs(CSE_graf$Total))
+
+for (año in años){
+  
+  data <- CSE_graf %>% 
+    filter(Año == año)
+  
+
+  Grafico <-ggplot(data, aes(x = Edad, y = Total, fill = Sexo)) +
+    geom_col(width = 0.9) +
+    coord_flip() +
+    scale_y_continuous(labels = abs, limits = c(-max_global, max_global)) +
+    labs(
+      title = paste("Pirámide de suicidios",año),
+      x = "Edad",
+      y = "Suicidios",
+      fill = "Sexo"
+    ) +
+    theme_grey()
+  
+  print(Grafico)
+ 
+}
+
+
+```
+
+```{r}
+brks <- pretty(c(0, max_global))
+tickvals <- c(-brks, brks)        # valores a ambos lados
+ticktext <- c(brks, brks)         # etiquetas siempre positivas
+
+p <- plot_ly(
+  data = CSE_graf,
+  x = ~Total, y = ~Edad,
+  color = ~Sexo,
+  colors = c("Hombres" = "#E86E34", "Mujeres" = "#5E7CE2"),
+  type = "bar", orientation = "h",
+  frame = ~Año,
+  hovertemplate = "Edad: %{y}<br>Suicidios: %{customdata}<extra></extra>",
+  customdata = ~abs(Total)
+) %>%
+  layout(
+    barmode = "relative",
+    # ----- Título centrado + más espacio arriba -----
+    title = list(text = "Pirámide de suicidios", x = 0.5, xanchor = "center",
+                 font = list(size = 22)),
+    margin = list(t = 90),                # más margen superior para el título
+
+    # ----- Ejes -----
+    xaxis = list(
+      title = "Suicidios",
+      range = c(-(max_global+50), (max_global+50)),
+      tickvals = tickvals,
+      ticktext = ticktext,
+      zeroline = FALSE                    # quitamos la zeroline para usar la nuestra
+    ),
+    yaxis = list(title = "Edad"),
+
+    # ----- Leyenda dentro de la trama -----
+    legend = list(
+      x = 0.98, y = 0.98,                 # esquina sup. derecha
+      xanchor = "right", yanchor = "top",
+      bgcolor = "rgba(255,255,255,0.75)", # caja semitransparente
+      bordercolor = "rgba(0,0,0,0.2)",
+      borderwidth = 1,
+      orientation = "v",
+      font = list(size = 12)
+    ),
+
+    # ----- (Opcional) línea vertical en x=0 -----
+    shapes = list(list(
+      type = "line", x0 = 0, x1 = 0, xref = "x",
+      y0 = 0, y1 = 1, yref = "paper",
+      line = list(color = "rgba(0,0,0,0.6)", width = 1)
+    )),
+
+    bargap = 0.15
+  ) %>%
+  animation_slider(currentvalue = list(prefix = "Año: ")) %>%
+  animation_opts(frame = 600, easing = "linear", redraw = FALSE)
+
+p
+```
+
+## Grafica Mapa
+
+```{r}
+#Cargamos las geometrías de las comunidades autonomas
+
+ccaa<-esp_get_ccaa(moveCAN = T) %>% st_as_sf()
+
+# Modificamos los nombres de las comunidades para que sea mas friendly
+  
+ccaa<-ccaa %>%
+  mutate(
+    Territorio = ine.ccaa.name %>%
+      # 1) Quitar espacios extremos
+      str_squish() %>%
+      # 2) Quitar prefijo numérico
+      str_remove("^\\d+\\s+") %>%
+      # 3) Quedarse con lo anterior a la primera coma
+      str_remove(",.*$") %>%
+      # 4) Casos excepcionales
+      str_replace("Balears", "Baleares")
+  ) %>%
+  # Filtramos columnas inecesarias
+  select(Territorio,geometry)
+
+#Unimos la info
+
+CSE_map<- ccaa %>%
+  left_join(CSE_map, by = "Territorio")
+
+
+```
+
+```{r}
+for (año in años) {
+  
+  # Mapa base
+  g_mapa <- CSE_map %>%
+    filter(Año == año) %>%
+    ggplot() +
+    geom_sf(aes(fill = Total), color = "white", linewidth = 0.25) +
+  
+    # Escala en grises
+    scale_fill_stepsn(
+      colours = grey(seq(0.9, 0.1, length.out = 7)),
+      n.breaks = 7,
+      trans = "sqrt",
+      na.value = "grey95",
+      name = "Suicidios",
+      labels = label_comma()
+    ) +
+  
+    # solo el mapa (sin título ni leyenda “encima”)
+    theme_void() + #esto me quita las coordenadas
+    theme(
+      panel.background = element_rect(fill = "grey95", color = NA),
+      plot.background  = element_rect(fill = "grey95", color = "grey80", linewidth = 0.6),
+      legend.position = "none",   # quitamos la leyenda aquí (la añadimos fuera)
+      
+    ) +
+    # Añadimos titulo y leyenda fuera
+    labs(title = paste("Suicidios por CCAA —", año)) +
+    theme(
+      plot.title.position = "plot",
+      plot.background = element_rect(fill = "white", color = NA),
+      panel.background = element_rect(fill = "grey95", color = NA),
+      legend.position = "right"
+    )
+  
+  print(g_mapa)
+    
+}
+```
+```{r}
+
+
+# Escala fija (opcional) para que todos los años compartan el mismo máximo
+zmax <- max(CSE_map$Total, na.rm = TRUE)
+
+# Paleta en grises (claro -> oscuro)
+pal_grey <- grey(seq(0.95, 0.2, length.out = 7))
+
+p_mapa <- plot_ly() %>%
+  add_sf(
+    data  = CSE_map,
+    split = ~Territorio,            # una traza por CCAA
+    frame = ~Año,                   # <-- slider por año
+    color = ~Total,                 # colorear por Total
+    colors = pal_grey,              # paleta en grises
+    text = ~paste0(
+      "<b>", Territorio, "</b><br>",
+      "Suicidios: ", comma(Total)
+    ),
+    hoverinfo = "text",
+    stroke = I("white"),            # borde blanco entre CCAA
+    span = I(1)                     # relleno sólido del polígono
+  ) %>%
+  layout(
+    title  = list(text = "Suicidios por CCAA", x = 0.5, xanchor = "center",
+                  font = list(size = 22)),
+    margin = list(t = 80, r = 110, b = 20, l = 20),
+    # Barra de color (leyenda) a la derecha, fuera del mapa
+    coloraxis = list(
+      colorscale = list(c(0, pal_grey[1]), c(1, pal_grey[length(pal_grey)])),
+      cmin = 0, cmax = zmax,
+      colorbar = list(title = "Suicidios", len = 0.8, x = 1.04, y = 0.5)
+    ),
+    showlegend = FALSE
+  ) %>%
+  animation_slider(currentvalue = list(prefix = "Año: ")) %>%
+  animation_opts(frame = 600, easing = "linear", redraw = FALSE)
+
+p_mapa
+
+```
+
+
 ## Subsection Heading Here
 
 .
