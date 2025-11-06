@@ -575,6 +575,98 @@ for (año in unique(MSE$Año)) {
 
 ```
 
+## Graficas Lineas, Nacionalidades
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(plotly)
+library(scales)
+library(ggrepel)
+
+suicidios_por_nacionalidad<-datos_ns_tidy%>%
+  group_by(Año,Nacionalidad)%>%
+  summarise(Total_Suicidios=sum(Total))%>%
+  filter(Nacionalidad!="No consta")
+
+suicidios_pastel_nacionalidad<-datos_ns_tidy%>%
+  group_by(Nacionalidad)%>%
+  summarise(Total_Suicidios=sum(Total),.groups="drop")%>%
+  mutate(Porcentaje=Total_Suicidios/sum(Total_Suicidios),
+         Etiqueta_Porcentaje=scales::percent(Porcentaje,accuracy=0.01))
+
+suicidios_por_año<-datos_ns_tidy%>%
+  group_by(Año)%>%
+  summarise(Total_Suicidios=sum(Total))
+
+
+gr_por_año<-ggplot(suicidios_por_año, aes(x=Año, y=Total_Suicidios, group=1)) +
+  geom_line(color="blue") +
+  geom_point(color="blue") +
+  labs(title = "Evolución del Total de Suicidios en España (2014-2023)",
+       y = "Número de Suicidios",
+       x = "Año") +
+  theme_minimal()
+
+# En el código de este gráfico es importante el group=1 porque como los años están como factor, para que los tome cada uno como un valor del eje
+
+ggplotly(gr_por_año)
+
+gr_pastel_nacionalidad<-ggplot(suicidios_pastel_nacionalidad,aes(x="",y=Total_Suicidios,fill = Nacionalidad))+
+  geom_col(width=1)+
+  coord_polar(theta="y")+
+  ggrepel::geom_label_repel(
+    aes(label = Etiqueta_Porcentaje),
+    position = position_stack(vjust = 0.5),
+    show.legend = FALSE,
+    segment.color = "grey50"
+  ) +  
+  labs(
+    title = "Proporción Total de Suicidios por Nacionalidad (2014-2023)",
+    fill = "Nacionalidad",
+    x = NULL,
+    y = NULL
+  ) +
+  theme_void() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 10)
+  )
+
+print(gr_pastel_nacionalidad)
+
+gra_barras_nac<-plot_ly(
+  data=suicidios_por_nacionalidad,
+  x= ~Nacionalidad, y= ~Total_Suicidios,
+  color = ~Nacionalidad,
+  type="bar",
+  frame= ~Año,
+  customdata= ~Total_Suicidios,
+  hovertemplate=paste0(
+    "<b>%{x}</b><br>",
+    "Total: %{y}",
+    "<extra></extra>"
+    )
+  ) %>%
+  layout(
+    title=list(text="Suicidios en España por Nacionalidad"),
+    xaxis=list(title="Nacionalidad"),
+    yaxis=list(title="Número de Suicidios"),
+    showlegend=F
+  ) %>%
+  animation_slider(
+    currentvalue=list(prefix="Año: ")
+  ) %>%
+  animation_opts(
+    frame=600,
+    easing="linear",
+    redraw=F
+  )
+
+print(gra_barras_nac)
+```
+
 ## Subsection Heading Here
 
 .
