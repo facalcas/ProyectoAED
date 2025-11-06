@@ -503,7 +503,7 @@ procesar_archivo_ns <- function(archivo_ns) {
     dplyr::filter(Nacionalidad != "Total" & Sexo != "Ambos sexos") %>%
     select(Nacionalidad, Sexo, Total) %>%
     mutate(
-      Año = año_extraido_ns,
+      Año = factor(año_extraido_ns,levels = 2014:2023),
       Nacionalidad = factor(Nacionalidad, levels = c("Española", "Extranjera", "No consta")),
       Sexo = factor(Sexo, levels = c("Hombres", "Mujeres"))
       ) %>%
@@ -525,6 +525,58 @@ datos_ns_tidy <- map_dfr(lista_archivos_ns, procesar_archivo_ns)
 
 # Se hace uso de una función de purrr que es map_dfr y lo que hace es que a la lista de archivos que cumplen con el patrón de ns les aplica la función de hacerlos tidy, y lo que hace es crear dataframes individuales que concatena en un gran dataframe con todos los archivos en formato tidy en 1
 ```
+
+Una vez importada los datos de suicidios en España distribuidos por la nacionalidad de las personas, se cuenta con un dateframe que cuenta con cuatro variables siendo estas:
+
+```{r}
+colnames(datos_ns_tidy)
+```
+
+La clase de estas variable son:
+```{r}
+str(datos_ns_tidy)
+```
+
+Se tiene que la variable Año es un factor con niveles de 2014 a 2023, la variable Nacionalidad de las personas se trata como un factor de tres niveles siendo estos: Española, Extranjera y No Consta. Siendo el nivel "No consta" como personas que se han suicidado pero no se pudo comprobar la nacionalidad de la persona. 
+
+```{r}
+suicidios_barras_nacionalidad<-datos_ns_tidy%>%
+  group_by(Nacionalidad)%>%
+  summarise(Total_Suicidios=sum(Total),.groups="drop")%>%
+  mutate(Porcentaje=Total_Suicidios/sum(Total_Suicidios),
+         Etiqueta_Porcentaje=scales::percent(Porcentaje,accuracy=0.01))
+
+gr_barras_nacionalidad <- ggplot(suicidios_barras_nacionalidad,
+                                 aes(x = reorder(Nacionalidad, -Total_Suicidios),
+                                     y = Total_Suicidios,
+                                     fill = Nacionalidad)) +
+  geom_col() +
+  geom_text(
+    aes(label = Etiqueta_Porcentaje),
+    vjust = 1.5,
+    color = "white",
+    size = 4
+  ) +
+  labs(
+    title = "Proporción Total de Suicidios por Nacionalidad (2014-2023)",
+    fill = "Nacionalidad",
+    x = "Nacionalidad",
+    y = "Número Total de Suicidios"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16),
+    legend.position = "none" 
+  )
+
+print(gr_barras_nacionalidad)
+
+```
+
+Como se puede observar en este gráfico, la proporción de datos de suicidios de personas de las que no se cuenta la nacionalidad es sumamente bajo. Por esta razón se prescindirán de estos registros para el análisis posterior de los datos segmentados por la nacionalidad de las personas.  
+
+La variable Sexo cuenta con niveles Hombre y Mujer, y el número de suicidios se muestra en la variable Total y es de tipo numérica.
+Se tiene un total de 60 datos, donde se muestran el total de suicidios registrados por año, y la información dividida por la nacionalidad de las personas. 
 
 # Results
 
@@ -646,7 +698,7 @@ suicidios_por_nacionalidad<-datos_ns_tidy%>%
   summarise(Total_Suicidios=sum(Total))%>%
   filter(Nacionalidad!="No consta")
 
-suicidios_pastel_nacionalidad<-datos_ns_tidy%>%
+suicidios_barras_nacionalidad<-datos_ns_tidy%>%
   group_by(Nacionalidad)%>%
   summarise(Total_Suicidios=sum(Total),.groups="drop")%>%
   mutate(Porcentaje=Total_Suicidios/sum(Total_Suicidios),
@@ -667,7 +719,7 @@ gr_por_año<-ggplot(suicidios_por_año, aes(x=Año, y=Total_Suicidios, group=1))
 
 # En el código de este gráfico es importante el group=1 porque como los años están como factor, para que los tome cada uno como un valor del eje
 
-#ggplotly(gr_por_año)
+print(gr_por_año)
 
 gr_pastel_nacionalidad<-ggplot(suicidios_pastel_nacionalidad,aes(x="",y=Total_Suicidios,fill = Nacionalidad))+
   geom_col(width=1)+
@@ -693,35 +745,60 @@ gr_pastel_nacionalidad<-ggplot(suicidios_pastel_nacionalidad,aes(x="",y=Total_Su
 
 print(gr_pastel_nacionalidad)
 
-gra_barras_nac<-plot_ly(
-  data=suicidios_por_nacionalidad,
-  x= ~Nacionalidad, y= ~Total_Suicidios,
-  color = ~Nacionalidad,
-  type="bar",
-  frame= ~Año,
-  customdata= ~Total_Suicidios,
-  hovertemplate=paste0(
-    "<b>%{x}</b><br>",
-    "Total: %{y}",
-    "<extra></extra>"
-    )
-  ) %>%
-  layout(
-    title=list(text="Suicidios en España por Nacionalidad"),
-    xaxis=list(title="Nacionalidad"),
-    yaxis=list(title="Número de Suicidios"),
-    showlegend=F
-  ) %>%
-  animation_slider(
-    currentvalue=list(prefix="Año: ")
-  ) %>%
-  animation_opts(
-    frame=600,
-    easing="linear",
-    redraw=F
+# gra_barras_nac<-plot_ly(
+#   data=suicidios_por_nacionalidad,
+#   x= ~Nacionalidad, y= ~Total_Suicidios,
+#   color = ~Nacionalidad,
+#   type="bar",
+#   frame= ~Año,
+#   customdata= ~Total_Suicidios,
+#   hovertemplate=paste0(
+#     "<b>%{x}</b><br>",
+#     "Total: %{y}",
+#     "<extra></extra>"
+#     )
+#   ) %>%
+#   layout(
+#     title=list(text="Suicidios en España por Nacionalidad"),
+#     xaxis=list(title="Nacionalidad"),
+#     yaxis=list(title="Número de Suicidios"),
+#     showlegend=F
+#   ) %>%
+#   animation_slider(
+#     currentvalue=list(prefix="Año: ")
+#   ) %>%
+#   animation_opts(
+#     frame=600,
+#     easing="linear",
+#     redraw=F
+#   )
+# 
+# print(gra_barras_nac)
+
+gr_barras_nacionalidad <- ggplot(suicidios_barras_nacionalidad,
+                                 aes(x = reorder(Nacionalidad, -Total_Suicidios),
+                                     y = Total_Suicidios,
+                                     fill = Nacionalidad)) +
+  geom_col() +
+  geom_text(
+    aes(label = Etiqueta_Porcentaje),
+    vjust = 1.5,
+    color = "white",
+    size = 4
+  ) +
+  labs(
+    title = "Proporción Total de Suicidios por Nacionalidad (2014-2023)",
+    fill = "Nacionalidad",
+    x = "Nacionalidad",
+    y = "Número Total de Suicidios"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16),
+    legend.position = "none" 
   )
 
-print(gra_barras_nac)
+print(gr_barras_nacionalidad)
 ```
 
 ```{r}
