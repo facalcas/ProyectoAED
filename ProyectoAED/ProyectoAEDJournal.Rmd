@@ -859,42 +859,42 @@ pacman::p_load(ggplot2,plotly,mapSpain,sf,scales)
 
 
 # Escala fija (opcional) para que todos los años compartan el mismo máximo
-# zmax <- max(CSE_map$Total, na.rm = TRUE)
+zmax <- max(CSE_map$Total, na.rm = TRUE)
 
 # Paleta en grises (claro -> oscuro)
-# pal_grey <- grey(seq(0.95, 0.2, length.out = 7))
-# 
-# p_mapa <- plot_ly() %>%
-#   add_sf(
-#     data  = CSE_map,
-#     split = ~Territorio,            # una traza por CCAA
-#     frame = ~Año,                   # <-- slider por año
-#     color = ~Total,                 # colorear por Total
-#     colors = pal_grey,              # paleta en grises
-#     text = ~paste0(
-#       "<b>", Territorio, "</b><br>",
-#       "Suicidios: ", comma(Total)
-#     ),
-#     hoverinfo = "text",
-#     stroke = I("white"),            # borde blanco entre CCAA
-#     span = I(1)                     # relleno sólido del polígono
-#   ) %>%
-#   layout(
-#     title  = list(text = "Suicidios por CCAA", x = 0.5, xanchor = "center",
-#                   font = list(size = 22)),
-#     margin = list(t = 80, r = 110, b = 20, l = 20),
-#     # Barra de color (leyenda) a la derecha, fuera del mapa
-#     coloraxis = list(
-#       colorscale = list(c(0, pal_grey[1]), c(1, pal_grey[length(pal_grey)])),
-#       cmin = 0, cmax = zmax,
-#       colorbar = list(title = "Suicidios", len = 0.8, x = 1.04, y = 0.5)
-#     ),
-#     showlegend = FALSE
-#   ) %>%
-#   animation_slider(currentvalue = list(prefix = "Año: ")) %>%
-#   animation_opts(frame = 600, easing = "linear", redraw = FALSE)
-# 
-# p_mapa
+pal_grey <- grey(seq(0.95, 0.2, length.out = 7))
+
+p_mapa <- plot_ly() %>%
+  add_sf(
+    data  = CSE_map,
+    split = ~Territorio,            # una traza por CCAA
+    frame = ~Año,                   # <-- slider por año
+    color = ~Total,                 # colorear por Total
+    colors = pal_grey,              # paleta en grises
+    text = ~paste0(
+      "<b>", Territorio, "</b><br>",
+      "Suicidios: ", comma(Total)
+    ),
+    hoverinfo = "text",
+    stroke = I("white"),            # borde blanco entre CCAA
+    span = I(1)                     # relleno sólido del polígono
+  ) %>%
+  layout(
+    title  = list(text = "Suicidios por CCAA", x = 0.5, xanchor = "center",
+                  font = list(size = 22)),
+    margin = list(t = 80, r = 110, b = 20, l = 20),
+    # Barra de color (leyenda) a la derecha, fuera del mapa
+    coloraxis = list(
+      colorscale = list(c(0, pal_grey[1]), c(1, pal_grey[length(pal_grey)])),
+      cmin = 0, cmax = zmax,
+      colorbar = list(title = "Suicidios", len = 0.8, x = 1.04, y = 0.5)
+    ),
+    showlegend = FALSE
+  ) %>%
+  animation_slider(currentvalue = list(prefix = "Año: ")) %>%
+  animation_opts(frame = 600, easing = "linear", redraw = FALSE)
+
+p_mapa
 
 ```
 
