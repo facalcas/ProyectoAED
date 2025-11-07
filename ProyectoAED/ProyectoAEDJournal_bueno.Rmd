@@ -90,8 +90,9 @@ A través de la exploración y visualización de dichas variables, el trabajo pr
 El análisis se fundamenta en los datos de mortalidad por suicidio en España para el periodo de 2014 a 2023, proporcionados por el INE.
 El punto de partida consistió en múltiples archivos .csv (uno para cada año de estudio), los cuales presentaban un formato estructurado, pero con trabajo por hacer en cuanto al formato de columnas y su distinción por año.
 Las librerías utilizadas para este análisis se presentan acontinuación.
-```{r}
-pacman::p_load(tidyverse,lubridate,dplyr,stringr,readr,purrr,ggplot2,mapSpain,sf,scales)
+```{r, echo=TRUE}
+pacman::p_load(tidyverse,lubridate,dplyr,stringr,readr,purrr,
+               ggplot2,mapSpain,sf,scales)
 ```
 El primer paso fue verificar la codificación de los conjuntos de datos, con el resultado que los conjuntos de Nacionalidad y Sexo y el conjunto de Comunidad Autónoma, Sexo y Edad comparten codificación, siendo esta la `ISO-8859-1`. Mientras que el conjunto de datos de Mes, Sexo y Edad presenta una codificación de `UTF-8`.
 
@@ -295,7 +296,7 @@ Con los datos consolidados, se realiza la inspección de las variables con las q
 El conjunto de datos que cuenta con la información de nacionalidad y sexo, presenta la siguiente estructura. 
 
 ```{r Estructura ns, echo=FALSE}
-glimpse(datos_ns_tidy)
+glimpse(datos_ns_tidy,width=70)
 ```
 
 Se destaca que la variable `Año` es un factor con niveles de 2014 a 2023, la variable `Sexo` es un factor con los niveles "Hombres" y "Mujeres", la variable `Nacionalidad` se trata como un factor de tres niveles siendo estos: "Española", "Extranjera" y "No Consta". Siendo el nivel `No consta` como personas que se han suicidado pero no se pudo comprobar la nacionalidad de la persona.
@@ -308,7 +309,7 @@ suicidios_barras_nacionalidad<-datos_ns_tidy%>%
   mutate(Porcentaje=Total_Suicidios/sum(Total_Suicidios),
          Etiqueta_Porcentaje=scales::percent(Porcentaje,accuracy=0.01))
 ```
-```{r, echo=FALSE}
+```{r, echo=FALSE, out.width="85%"}
 gr_barras_nacionalidad <- ggplot(suicidios_barras_nacionalidad,
                                  aes(x = reorder(Nacionalidad, -Total_Suicidios),
                                      y = Total_Suicidios,
@@ -316,7 +317,7 @@ gr_barras_nacionalidad <- ggplot(suicidios_barras_nacionalidad,
   geom_col() +
   geom_text(
     aes(label = Etiqueta_Porcentaje),
-    position = position_stack(vjust = 0.5),
+    vjust = -0.5,
     color = "black",
     size = 4
   ) +
@@ -356,7 +357,7 @@ datos_ns_tidy%>%
 El conjunto de datos que presentan los datos de suicidio, separados por mes, sexo y edad, presenta la siguiente estructura. 
 
 ```{r Estructura MSE, echo=FALSE}
-glimpse(MSE_sin_totales)
+glimpse(MSE_sin_totales,width=70)
 ```
 
 Se disponen de 5 variables llamadas `Año`, `Mes de defunción`,`Sexo`,`Edad` y `Total_suicidios`. Los nombres de estas variables son suficientemente representativos, y todas son de tipo factor excepto la variable numérica de `Total_suicidios`.
@@ -383,7 +384,7 @@ Como se observa, existen meses sin suicidios registrados, y el máximo registrad
 Finalmente, el conjunto de datos con datos separados por Comunidad Autonóma presenta la siguiente estructura.
 
 ```{r Estructura CSE, echo=FALSE}
-glimpse(CSE_tidy)
+glimpse(CSE_tidy,width=70)
 ```
 
 Se disponen de 5 variables llamadas `Año`, `Territorio`,`Sexo`,`Edad` y `Total`. Como se ha manejado en los otros datasets, se establecen factores para las variables `Año` (con el periodo de estudio de este proyecto), para la variable `Territorio` se establece un factor con 19 niveles que representan las Comunidades y Ciudades Autónomas españolas. Como en los anteriores conjuntos explicados, se establece un factor para `Sexo` y `Edad`, con los niveles analizados.
@@ -402,11 +403,13 @@ CSE_tidy%>%
   )
 ```
 
+ **Hacer análisis de outliers**
+
 # Resultados
 
 Una de las primeras preguntas que surgen a la hora de analizar nuestro caso de estudio, es cómo ha sido la evolución del número de suicidios a lo largo de los años en España. Para ello, se visualiza en un gráfico de líneas, como se ha comportado en el periodo de 2014 a 2023.
 
-```{r grafico-defunciones a lo largo del tiempo, echo=FALSE}
+```{r grafico-defunciones a lo largo del tiempo, echo=FALSE, out.width="85%"}
 suicidios_por_año<-datos_ns_tidy%>%
   group_by(Año)%>%
   summarise(Total_Suicidios=sum(Total))
@@ -423,7 +426,7 @@ print(gr_por_año)
 ```
 Con este gráfico se visualiza un crecimiento en el número de suicidios registrados en España en los últimos años del periodo analizado, además se quiere identificar específicamente el comportamiento tras el inicio de la pandemia por el COVID-19. Con el siguiente gráfico se añade una capa para complementar esta hipótesis con los resultados obtenidos.
 
-```{r grafico lineas 2020, echo=FALSE, message=FALSE, warning=FALSE}
+```{r grafico lineas 2020, echo=FALSE, message=FALSE, warning=FALSE, out.width="85%"}
 MSE_evolucion <-MSE %>% 
   filter(`Mes de defunción`=="Todos los meses",
          Sexo=="Ambos sexos",
@@ -437,10 +440,18 @@ MSE_evolucion %>%
        x = "Año") +
   geom_line(group=1) + 
   geom_vline(xintercept = "2020", linetype = "dashed", color = "red") +
+  annotate("text",
+           x="2020",
+           y=4100,
+           label="Pandemia COVID-19",
+           color="red",
+           size=3.5,
+           hjust=1.1,
+           vjust=0)+
   theme_minimal()
 ```
 
-```{r box por meses MSE, echo=FALSE, message=FALSE, warning=FALSE}
+```{r box por meses MSE, echo=FALSE, message=FALSE, warning=FALSE, out.width="85%"}
 box_meses<-MSE_sin_totales%>%
   group_by(`Mes de defunción`,Año)%>%
   summarise(Total_sum=sum(Total_suicidios))%>%
