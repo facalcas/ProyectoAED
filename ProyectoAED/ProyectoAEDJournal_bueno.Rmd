@@ -1078,9 +1078,9 @@ print(gr_barras_nacionalidad)
 ```
 
 ```{r}
-library(readxl)
-poblacion_NS <- read_excel("../data/poblacion_ASN.xlsx", skip=6, n_max = 9)
-View(poblacion_NS)
+# library(readxl)
+# poblacion_NS <- read_excel("../data/poblacion_ASN.xlsx", skip=6, n_max = 9)
+# View(poblacion_NS)
 ```
 
 ```{r, poblaciones_ns}
