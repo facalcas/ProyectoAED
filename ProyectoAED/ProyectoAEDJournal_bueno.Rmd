@@ -328,9 +328,18 @@ print(gr_barras_nacionalidad)
 Como se observa en el gráfico, la proporción de datos de esta categoría es prácticamente nula, con apenas un 0.02%. Por esta razón, para el análisis de los datos de suicidio segmentados por `Nacionalidad` esta categoría no se toma en consideración.
 Finalmente para este dataset, la variable `Total` cuenta con un total de 60 datos, donde se muestran el total de suicidios registrados por año, y la información dividida por la nacionalidad de las personas.
 A continuación se presenta un resumen de los datos presentes en esta variable.
-```{r}
+```{r, echo=FALSE}
 datos_ns_tidy%>%
-  filter(Nacionalidad!="No consta")
+  filter(Nacionalidad!="No consta")%>%
+  summarise(
+    Mínimo=min(Total),
+    Q1 = quantile(Total, 0.25, na.rm = TRUE),
+    Mediana = median(Total, na.rm = TRUE),
+    Media = mean(Total, na.rm = TRUE),
+    Q3 = quantile(Total, 0.75, na.rm = TRUE),
+    Maximo = max(Total, na.rm = TRUE),
+    Valores_NA = sum(is.na(Total))
+  )
 ```
 
 
@@ -416,62 +425,6 @@ Finalmente la variable `Total` muestra el número de suicidios presentados en ba
 ```{r, echo=FALSE}
 sum(is.na(CSE_tidy$Total))
 ```
-
-## Nacionalidad y Sexo
-
-Una vez importada los datos de suicidios en España distribuidos por la nacionalidad de las personas, se cuenta con un dateframe que cuenta con cuatro variables siendo estas:
-
-```{r, echo=FALSE}
-print(colnames(datos_ns_tidy))
-```
-
-La clase de estas variable son:
-```{r, echo=FALSE}
-print(str(datos_ns_tidy))
-```
-
-Se tiene que la variable `Año` es un factor con niveles de 2014 a 2023, la variable `Nacionalidad` de las personas se trata como un factor de tres niveles siendo estos: Española, Extranjera y No Consta. Siendo el nivel "No consta" como personas que se han suicidado pero no se pudo comprobar la nacionalidad de la persona. 
-
-```{r, echo=FALSE}
-suicidios_barras_nacionalidad<-datos_ns_tidy%>%
-  group_by(Nacionalidad)%>%
-  summarise(Total_Suicidios=sum(Total),.groups="drop")%>%
-  mutate(Porcentaje=Total_Suicidios/sum(Total_Suicidios),
-         Etiqueta_Porcentaje=scales::percent(Porcentaje,accuracy=0.01))
-
-gr_barras_nacionalidad <- ggplot(suicidios_barras_nacionalidad,
-                                 aes(x = reorder(Nacionalidad, -Total_Suicidios),
-                                     y = Total_Suicidios,
-                                     fill = Nacionalidad)) +
-  geom_col() +
-  geom_text(
-    aes(label = Etiqueta_Porcentaje),
-    vjust = 1.5,
-    color = "white",
-    size = 4
-  ) +
-  labs(
-    title = "Proporción Total de Suicidios por Nacionalidad (2014-2023)",
-    fill = "Nacionalidad",
-    x = "Nacionalidad",
-    y = "Número Total de Suicidios"
-  ) +
-  theme_minimal() +
-  theme(
-    plot.title = element_text(hjust = 0.5, size = 16),
-    legend.position = "none" 
-  )
-
-print(gr_barras_nacionalidad)
-
-```
-
-Como se puede observar en este gráfico, la proporción de datos de suicidios de personas de las que no se cuenta la nacionalidad es sumamente bajo. Por esta razón se prescindirán de estos registros para el análisis posterior de los datos segmentados por la nacionalidad de las personas.  
-
-La variable `Sexo` cuenta con niveles Hombre y Mujer, y el número de suicidios se muestra en la variable `Total` y es de tipo numérica.
-Se tiene un total de 60 datos, donde se muestran el total de suicidios registrados por año, y la información dividida por la nacionalidad de las personas. 
-
-
 
 
 
