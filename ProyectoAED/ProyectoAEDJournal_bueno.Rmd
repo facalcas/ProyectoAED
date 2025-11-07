@@ -278,9 +278,64 @@ Una vez los ficheros se han tratado, se procede a su concatenación para la crea
 
 
 ## Inspección de los Datos
-### Mes de defunción sexo y edad
-## Mes, Sexo y Edad
-Con los datos consolidados, se realiza la explicación de las variables con las que se cuenta para el análisis, y diversas características presentes en cada uno de los datasets.
+
+Con los datos consolidados, se realiza la inspección de las variables con las que se cuenta para el análisis, y se identifican diversas características presentes en cada uno de los datasets.
+
+El conjunto de datos que cuenta con la información de nacionalidad y sexo, presenta la siguiente estructura. 
+
+```{r Estructura ns, echo=FALSE}
+glimpse(datos_ns_tidy)
+```
+
+Se destaca que la variable `Año` es un factor con niveles de 2014 a 2023, la variable `Sexo` es un factor con los niveles "Hombres" y "Mujeres", la variable `Nacionalidad` se trata como un factor de tres niveles siendo estos: "Española", "Extranjera" y "No Consta". Siendo el nivel `No consta` como personas que se han suicidado pero no se pudo comprobar la nacionalidad de la persona.
+Como parte de las decisiones tomadas con este conjunto, se analiza la proporción que esta categoría presenta en los datos, con los siguientes resultados.
+
+```{r, include=FALSE}
+suicidios_barras_nacionalidad<-datos_ns_tidy%>%
+  group_by(Nacionalidad)%>%
+  summarise(Total_Suicidios=sum(Total),.groups="drop")%>%
+  mutate(Porcentaje=Total_Suicidios/sum(Total_Suicidios),
+         Etiqueta_Porcentaje=scales::percent(Porcentaje,accuracy=0.01))
+```
+```{r, echo=FALSE}
+gr_barras_nacionalidad <- ggplot(suicidios_barras_nacionalidad,
+                                 aes(x = reorder(Nacionalidad, -Total_Suicidios),
+                                     y = Total_Suicidios,
+                                     fill = Nacionalidad)) +
+  geom_col() +
+  geom_text(
+    aes(label = Etiqueta_Porcentaje),
+    position = position_stack(vjust = 0.5),
+    color = "black",
+    size = 4
+  ) +
+  labs(
+    title = "Proporción Total de Suicidios por Nacionalidad (2014-2023)",
+    fill = "Nacionalidad",
+    x = "Nacionalidad",
+    y = "Número Total de Suicidios"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16),
+    legend.position = "none" 
+  )
+
+print(gr_barras_nacionalidad)
+
+```
+
+Como se observa en el gráfico, la proporción de datos de esta categoría es prácticamente nula, con apenas un 0.02%. Por esta razón, para el análisis de los datos de suicidio segmentados por `Nacionalidad` esta categoría no se toma en consideración.
+Finalmente para este dataset, la variable `Total` cuenta con un total de 60 datos, donde se muestran el total de suicidios registrados por año, y la información dividida por la nacionalidad de las personas.
+A continuación se presenta un resumen de los datos presentes en esta variable.
+```{r}
+datos_ns_tidy%>%
+  filter(Nacionalidad!="No consta")
+```
+
+
+
+
 
 Tras transformar nuestro dataset a formato `tidy` y haber concatenado los distintos años, vamos a analizar un poco cada una de las variables.
 
