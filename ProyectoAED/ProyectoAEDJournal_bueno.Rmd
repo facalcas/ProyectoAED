@@ -647,7 +647,62 @@ ggplot(df_tidy_poblacion_NS, aes(x = Año, y = Tasa_suicidios, color = Nacionali
 
 ```
 
+```{r Poblaciones para comunidades autonomas}
+poblacion_comunidades_1 <- read_excel("../data/poblacion_CA_1.xlsx",skip=6, n_max=20)
+poblacion_comunidades_2 <- read_excel("../data/poblacion_CA_2.xlsx", skip=6,n_max=20)
+convertir_pob_con_tidy <- function(poblacion_comunidades){
+poblacion_comunidades <-poblacion_comunidades  %>%
+  mutate(fila = row_number()) %>%        # añadimos id de fila
+  pivot_longer(
+    cols = -c(1,fila),                  # pivotar todas menos comunidad y fila
+    names_to = "Sexo",
+    values_to = "valor_bruto"
+  ) %>%
+  group_by(Sexo) %>%
+  mutate(
+    Año = valor_bruto[fila == 1],       # el año es el valor de la primera fila
+    Poblacion = if_else(fila == 1, NA, valor_bruto)  # primera fila = año, no población
+  ) %>%
+  ungroup() %>%
+  filter(fila != 1) %>%                 # quitamos sólo la fila pivotada que quedó vacía
+  select(Año, Sexo, Comunidad = 1, Poblacion) %>% 
+  mutate(Sexo=ifelse(str_detect(Sexo, pattern="(Hombres)|(Mujeres)"),Sexo,NA)) %>% 
+  fill(Sexo,.direction = "down") %>% 
+  mutate(Comunidad=gsub(pattern="[0-9]+.",replacement = "",Comunidad)) %>% 
+  mutate(across(-Poblacion,as.factor)) %>% 
+  mutate(Poblacion=as.numeric(Poblacion)) %>% 
+  rename(Territorio=Comunidad)
 
+levels(poblacion_comunidades$Territorio)[levels(poblacion_comunidades$Territorio)%in%c("Balears, Illes","Asturias, Principado de","Rioja, La","Madrid, Comunidad de", "Navarra, Comunidad Foral de","Murcia, Región de")]<- c("Baleares","Asturias","Rioja","Madrid","Navarra", "Murcia")
+return(poblacion_comunidades)
+}
+
+poblacion_comunidades_1<-convertir_pob_con_tidy(poblacion_comunidades_1)
+poblacion_comunidades_2 <- convertir_pob_con_tidy(poblacion_comunidades_2)
+
+poblacion_comunidades <- rbind(poblacion_comunidades_1,poblacion_comunidades_2)
+
+CSE_tidy_con_poblacion <- CSE_tidy %>%
+  group_by(Año, Sexo, Territorio) %>%
+  summarise(
+    Total = sum(Total, na.rm = TRUE),
+    .groups = "drop"
+  ) %>% 
+  inner_join(poblacion_comunidades,by=c("Año","Sexo","Territorio"))
+
+
+CSE_tidy_con_poblacion
+```
+
+```{r Poblacion-Sexo}
+CSE_poblacion_sexo <- CSE_tidy_con_poblacion %>% 
+  group_by(Año,Sexo) %>% 
+  summarise(
+    Total=sum(Total, na.rm=TRUE),
+    Poblacion=sum(Poblacion, na.rm=TRUE),
+    .groups = "drop"
+  )
+```
 ## Subsection Heading Here
 
 .
