@@ -1078,63 +1078,63 @@ print(gr_barras_nacionalidad)
 ```
 
 ```{r}
-# library(readxl)
-# poblacion_NS <- read_excel("../data/poblacion_ASN.xlsx", skip=6, n_max = 9)
-# View(poblacion_NS)
+library(readxl)
+poblacion_NS <- read_excel("../data/poblacion_ASN.xlsx", skip=6, n_max = 9)
+View(poblacion_NS)
 ```
 
 ```{r, poblaciones_ns}
-# library(readxl)
-# library(tidyverse)
-# 
-# 
-# df_tidy_poblacion_NS <- poblacion_NS %>%
-#   rename(cat = 1) %>%
-#   
-#   mutate(
-#     Nacionalidad = if_else(cat %in% c("Española", "Extranjera"), cat, NA_character_),
-#     edad         = if_else(cat == "Todas las edades", cat, NA_character_),
-#     Sexo         = if_else(cat %in% c("Hombres", "Mujeres"), cat, NA_character_)
-#   ) %>%
-#   
-#   fill(Nacionalidad, edad, Sexo) %>%
-#   
-#   filter(!(cat %in% c("Española", "Extranjera", "Todas las edades"))) %>%
-#   
-#   pivot_longer(
-#     cols = -c(cat, Nacionalidad, edad, Sexo),
-#     names_to = "fecha",
-#     values_to = "Poblacion"
-#   ) %>%
-#   
-#   mutate(
-#     Año = as.factor(str_extract(fecha, "\\d{4}") |> as.integer())
-#   ) %>%
-#   select(Año,Nacionalidad,Sexo,  Poblacion)
-# 
-# 
-# df_tidy_poblacion_NS <- datos_ns_tidy %>% filter(Nacionalidad!="No consta") %>% inner_join(df_tidy_poblacion_NS,by=c("Año","Nacionalidad","Sexo"))
-# 
-# df_tidy_poblacion_NS <- df_tidy_poblacion_NS %>%
-#   group_by(Año, Nacionalidad) %>%
-#   summarise(
-#     Suicidios_total = sum(Total, na.rm = TRUE),
-#     Poblacion_total = sum(Poblacion, na.rm = TRUE),
-#     .groups = "drop"
-#   ) %>%
-#   mutate(Tasa_suicidios = Suicidios_total / Poblacion_total)
-# 
-# 
-# ggplot(df_tidy_poblacion_NS, aes(x = Año, y = Tasa_suicidios, color = Nacionalidad, group = Nacionalidad)) +
-#   geom_line(size = 1.2) +
-#   geom_point() +
-#   labs(
-#     title = "Tasa de suicidios por nacionalidad (total hombres + mujeres)",
-#     x = "Año",
-#     y = "Tasa de suicidios",
-#     color = "Nacionalidad"
-#   ) +
-#   theme_minimal()
+library(readxl)
+library(tidyverse)
+
+
+df_tidy_poblacion_NS <- poblacion_NS %>%
+  rename(cat = 1) %>%
+  
+  mutate(
+    Nacionalidad = if_else(cat %in% c("Española", "Extranjera"), cat, NA_character_),
+    edad         = if_else(cat == "Todas las edades", cat, NA_character_),
+    Sexo         = if_else(cat %in% c("Hombres", "Mujeres"), cat, NA_character_)
+  ) %>%
+  
+  fill(Nacionalidad, edad, Sexo) %>%
+  
+  filter(!(cat %in% c("Española", "Extranjera", "Todas las edades"))) %>%
+  
+  pivot_longer(
+    cols = -c(cat, Nacionalidad, edad, Sexo),
+    names_to = "fecha",
+    values_to = "Poblacion"
+  ) %>%
+  
+  mutate(
+    Año = as.factor(str_extract(fecha, "\\d{4}") |> as.integer())
+  ) %>%
+  select(Año,Nacionalidad,Sexo,  Poblacion)
+
+
+df_tidy_poblacion_NS <- datos_ns_tidy %>% filter(Nacionalidad!="No consta") %>% inner_join(df_tidy_poblacion_NS,by=c("Año","Nacionalidad","Sexo"))
+
+df_tidy_poblacion_NS <- df_tidy_poblacion_NS %>%
+  group_by(Año, Nacionalidad) %>%
+  summarise(
+    Suicidios_total = sum(Total, na.rm = TRUE),
+    Poblacion_total = sum(Poblacion, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(Tasa_suicidios = Suicidios_total / Poblacion_total)
+
+
+ggplot(df_tidy_poblacion_NS, aes(x = Año, y = Tasa_suicidios, color = Nacionalidad, group = Nacionalidad)) +
+  geom_line(size = 1.2) +
+  geom_point() +
+  labs(
+    title = "Tasa de suicidios por nacionalidad (total hombres + mujeres)",
+    x = "Año",
+    y = "Tasa de suicidios",
+    color = "Nacionalidad"
+  ) +
+  theme_minimal()
 
 ```
 
