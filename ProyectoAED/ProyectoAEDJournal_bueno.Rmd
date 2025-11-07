@@ -278,7 +278,8 @@ Una vez los ficheros se han tratado, se procede a su concatenación para la crea
 
 
 ## Inspección de los Datos
-
+### Mes de defunción sexo y edad
+## Mes, Sexo y Edad
 Con los datos consolidados, se realiza la explicación de las variables con las que se cuenta para el análisis, y diversas características presentes en cada uno de los datasets.
 
 Tras transformar nuestro dataset a formato `tidy` y haber concatenado los distintos años, vamos a analizar un poco cada una de las variables.
@@ -331,8 +332,16 @@ Por último, la variable `Total_suicidios` hemos dicho que es una variable numé
 ```{r, echo=FALSE}
 summary(MSE_sin_totales$Total_suicidios)
 ```
+
 Como vemos, hay meses, edades y sexos donde no se suicida nadie, y el máximo son 45. Así mismo, de media entre todas las edades, sexos y meses se suicidan 10.63 personas.
 
+Además, este conjunto de datos no presentan datos faltantes:
+
+```{r, echo = FALSE}
+sum(is.na(MSE_sin_totales))
+```
+
+## Tidy dataset CA, Sexo y Edad
 
 Una vez importado el conjunto de datos de los suicidios repartidos por comunidad autónoma y su respectiva transformación a un conjunto en formato tidy, el resultante es un dataframe con las siguientes variables:
 
@@ -353,7 +362,7 @@ Finalmente la variable `Total` muestra el número de suicidios presentados en ba
 sum(is.na(CSE_tidy$Total))
 ```
 
-
+## Nacionalidad y Sexo
 
 Una vez importada los datos de suicidios en España distribuidos por la nacionalidad de las personas, se cuenta con un dateframe que cuenta con cuatro variables siendo estas:
 
@@ -431,385 +440,385 @@ Posteriormente, se realizará una inspección de cada una de las variables para 
 Por último, veremos si existe alguna relación entre alguno de nuestros factores y el número total de suicidios.
 
 
-## Inspección de los datos
-
-### Mes de defunción sexo y edad
-## Mes, Sexo y Edad
-```{r Codificacion MSE, echo=FALSE}
-guess_encoding("../data/2014_MSE.csv")
-#Tienen codificación UTF-8
-```
+<!-- ## Inspección de los datos -->
 
-```{r MSE, echo=FALSE}
- 
- # Creamos dataframe base vacío
- MSE <- data.frame(
-   "Mes de defunción" = character(),
-   Sexo = character(),
-   Edad = character(),
-   Total = numeric(),
-   stringsAsFactors = FALSE
- )
- 
- colnames(MSE)[1] <- "Mes de defunción"
- 
- # Función para ir concatenando los dataframes anuales
- cargar_y_añadir_MSE <- function(MSE, archivo){
-   MSE_año <- read_delim(paste0("../data/",archivo), 
-     delim = ";", escape_double = FALSE, trim_ws = TRUE, locale = locale(grouping_mark = "."))
-   MSE_año$Año <- gsub(pattern = "_[^1-9]*","", x = archivo)
-   MSE <- rbind(MSE,MSE_año)
-   return(MSE)
- }
- 
- lista_archivos <- grep(x = list.files("../data"), pattern="[1-9]*_MSE.*", value= TRUE)
- for (archivo in lista_archivos){
-   MSE <- cargar_y_añadir_MSE(MSE, archivo)
- }
- 
- # Convertimos los datos al tipo correcto
- MSE[colnames(MSE)!="Total"] <- as.data.frame(lapply(MSE[colnames(MSE)!="Total"],as.factor))
- 
- #Renombramos variable Total para que sea más explicativa
- 
- colnames(MSE)[colnames(MSE)=="Total"] <- "Total_suicidios"
- 
- # Reordenamos las columnas
- MSE <- MSE %>% 
-   select(Año,"Mes de defunción", Sexo, Edad, Total_suicidios)
-```
-Tras transformar nuestro dataset a formato `tidy` y haber concatenado los distintos años, vamos a analizar un poco cada una de las variables.
+<!-- ### Mes de defunción sexo y edad -->
+<!-- ## Mes, Sexo y Edad -->
+<!-- ```{r Codificacion MSE, echo=FALSE} -->
+<!-- guess_encoding("../data/2014_MSE.csv") -->
+<!-- #Tienen codificación UTF-8 -->
+<!-- ``` -->
 
-Nuestras variables en este conjunto de datos son las siguientes:
+<!-- ```{r MSE, echo=FALSE} -->
 
+<!--  # Creamos dataframe base vacío -->
+<!--  MSE <- data.frame( -->
+<!--    "Mes de defunción" = character(), -->
+<!--    Sexo = character(), -->
+<!--    Edad = character(), -->
+<!--    Total = numeric(), -->
+<!--    stringsAsFactors = FALSE -->
+<!--  ) -->
 
-```{r, echo = FALSE}
-str(MSE)
-```
-Vemos pues que disponemos de 5 variables llamadas `Año`, `Mes de defunción`,`Sexo`,`Edad` y `Total_suicidios`. Los nombres de estas vemos que son suficientemente representativos, y todas son de tipo factor excepto la de `Total_suicidios` que es numérica. Nótese que la variable año se ha codificado como factor en lugar de fecha porque únicamente sirve como representación categórica para clasificar anualmente los datos.
+<!--  colnames(MSE)[1] <- "Mes de defunción" -->
 
-Vamos a inspeccionar un poco cada una de las variables.
+<!--  # Función para ir concatenando los dataframes anuales -->
+<!--  cargar_y_añadir_MSE <- function(MSE, archivo){ -->
+<!--    MSE_año <- read_delim(paste0("../data/",archivo),  -->
+<!--      delim = ";", escape_double = FALSE, trim_ws = TRUE, locale = locale(grouping_mark = ".")) -->
+<!--    MSE_año$Año <- gsub(pattern = "_[^1-9]*","", x = archivo) -->
+<!--    MSE <- rbind(MSE,MSE_año) -->
+<!--    return(MSE) -->
+<!--  } -->
 
-En cuanto al `Año`, si miramos los distintos valores que puede tomar vemos que efectivamente tenemos datos de los años desde 2014 hasta 2023.
+<!--  lista_archivos <- grep(x = list.files("../data"), pattern="[1-9]*_MSE.*", value= TRUE) -->
+<!--  for (archivo in lista_archivos){ -->
+<!--    MSE <- cargar_y_añadir_MSE(MSE, archivo) -->
+<!--  } -->
 
-```{r, echo=FALSE}
-levels(MSE$Año)
-```
-Por otro lado, como cabría esperar la variable `Mes de defunción` dispone de todos los meses del año, pero vemos una particularidad, tenemos un agregado de "Todos los meses":
+<!--  # Convertimos los datos al tipo correcto -->
+<!--  MSE[colnames(MSE)!="Total"] <- as.data.frame(lapply(MSE[colnames(MSE)!="Total"],as.factor)) -->
 
+<!--  #Renombramos variable Total para que sea más explicativa -->
 
-En cuanto al `Sexo` disponemos de "Hombres" y "Mujeres" y, además, de nuevo tenemos un agregado de "Ambos sexos".
+<!--  colnames(MSE)[colnames(MSE)=="Total"] <- "Total_suicidios" -->
 
-```{r, echo=FALSE}
-levels(MSE$Sexo)
-```
+<!--  # Reordenamos las columnas -->
+<!--  MSE <- MSE %>%  -->
+<!--    select(Año,"Mes de defunción", Sexo, Edad, Total_suicidios) -->
+<!-- ``` -->
+<!-- Tras transformar nuestro dataset a formato `tidy` y haber concatenado los distintos años, vamos a analizar un poco cada una de las variables. -->
 
-Para la última variable tipo factor (`Edad`) tenemos las siguientes categorías:
+<!-- Nuestras variables en este conjunto de datos son las siguientes: -->
 
-```{r, echo=FALSE}
-levels(MSE$Edad)
-```
-
-Como podemos observar, tenemos también un agregado de "Todas las edades".
-
-En vista de los datos tipo factor, realizamos una reordenación de los meses y las edades, así como una eliminación de las filas correspondientes a los registros "Ambos sexos","Todas las edades" y "Todos los meses".
-
-```{r, echo=FALSE}
-library(tidyverse)
-MSE$`Mes de defunción` <- factor(MSE$`Mes de defunción`, levels=c("enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre", "Todos los meses"))
-
-MSE$Edad <- factor(MSE$Edad, levels=c("Todas las edades","Menores de 15 años","De 15 a 29 años","De 30 a 39 años","De 40 a 44 años","De 45 a 49 años","De 50 a 54 años","De 55 a 59 años","De 60 a 64 años","De 65 a 69 años","De 70 a 74 años","De 75 a 79 años","De 80 a 84 años","De 85 a 89 años","De 90 a 94 años","De 95 años y más"))
-MSE_sin_totales <- MSE %>% 
-  filter(`Mes de defunción`!="Todos los meses", Sexo!="Ambos sexos", Edad!="Todas las edades")
-```
-
-Por último, la variable `Total_suicidios` hemos dicho que es una variable numérica. Explorémosla un poco numéricamente. Para ello, saquemos estadísticos por mes.
-
-```{r, echo=FALSE}
-summary(MSE_sin_totales$Total_suicidios)
-```
-Como vemos, hay meses, edades y sexos donde no se suicida nadie, y el máximo son 45. Así mismo, de media entre todas las edades, sexos y meses se suicidan 10.63 personas.
-
-
-
 
+<!-- ```{r, echo = FALSE} -->
+<!-- str(MSE) -->
+<!-- ``` -->
+<!-- Vemos pues que disponemos de 5 variables llamadas `Año`, `Mes de defunción`,`Sexo`,`Edad` y `Total_suicidios`. Los nombres de estas vemos que son suficientemente representativos, y todas son de tipo factor excepto la de `Total_suicidios` que es numérica. Nótese que la variable año se ha codificado como factor en lugar de fecha porque únicamente sirve como representación categórica para clasificar anualmente los datos. -->
 
+<!-- Vamos a inspeccionar un poco cada una de las variables. -->
 
+<!-- En cuanto al `Año`, si miramos los distintos valores que puede tomar vemos que efectivamente tenemos datos de los años desde 2014 hasta 2023. -->
 
+<!-- ```{r, echo=FALSE} -->
+<!-- levels(MSE$Año) -->
+<!-- ``` -->
+<!-- Por otro lado, como cabría esperar la variable `Mes de defunción` dispone de todos los meses del año, pero vemos una particularidad, tenemos un agregado de "Todos los meses": -->
 
 
+<!-- En cuanto al `Sexo` disponemos de "Hombres" y "Mujeres" y, además, de nuevo tenemos un agregado de "Ambos sexos". -->
 
+<!-- ```{r, echo=FALSE} -->
+<!-- levels(MSE$Sexo) -->
+<!-- ``` -->
 
+<!-- Para la última variable tipo factor (`Edad`) tenemos las siguientes categorías: -->
 
+<!-- ```{r, echo=FALSE} -->
+<!-- levels(MSE$Edad) -->
+<!-- ``` -->
 
+<!-- Como podemos observar, tenemos también un agregado de "Todas las edades". -->
 
+<!-- En vista de los datos tipo factor, realizamos una reordenación de los meses y las edades, así como una eliminación de las filas correspondientes a los registros "Ambos sexos","Todas las edades" y "Todos los meses". -->
 
+<!-- ```{r, echo=FALSE} -->
+<!-- library(tidyverse) -->
+<!-- MSE$`Mes de defunción` <- factor(MSE$`Mes de defunción`, levels=c("enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre", "Todos los meses")) -->
 
+<!-- MSE$Edad <- factor(MSE$Edad, levels=c("Todas las edades","Menores de 15 años","De 15 a 29 años","De 30 a 39 años","De 40 a 44 años","De 45 a 49 años","De 50 a 54 años","De 55 a 59 años","De 60 a 64 años","De 65 a 69 años","De 70 a 74 años","De 75 a 79 años","De 80 a 84 años","De 85 a 89 años","De 90 a 94 años","De 95 años y más")) -->
+<!-- MSE_sin_totales <- MSE %>%  -->
+<!--   filter(`Mes de defunción`!="Todos los meses", Sexo!="Ambos sexos", Edad!="Todas las edades") -->
+<!-- ``` -->
 
+<!-- Por último, la variable `Total_suicidios` hemos dicho que es una variable numérica. Explorémosla un poco numéricamente. Para ello, saquemos estadísticos por mes. -->
 
+<!-- ```{r, echo=FALSE} -->
+<!-- summary(MSE_sin_totales$Total_suicidios) -->
+<!-- ``` -->
+<!-- Como vemos, hay meses, edades y sexos donde no se suicida nadie, y el máximo son 45. Así mismo, de media entre todas las edades, sexos y meses se suicidan 10.63 personas. -->
 
-## Tidy dataset CA, Sexo y Edad
-
-```{r, echo=FALSE}
-# Cargar la ubicación del archivo
-
-archivos<-list.files("../data")
-
-# Filtramos por los que terminan en _CSE.csv usando una expresion regular
-archivos<-grep("CSE\\.csv$", archivos, value = TRUE)
-
-# Creamos un df vacío en el que almacenar nuestros datos tratados y limpios
-CSE_tidy<-data.frame()
-
-for (CSE in archivos){
-  
-  # Generamos la ruta del archivo
-
-  ruta <- paste0("../data/",CSE)
-  
-  # Cargamos el dataframe
-  
-  encoding<-guess_encoding(ruta)[[1]][1]
-  
-  df <- read_delim(ruta, delim = ";", 
-                   escape_double = FALSE, col_types = cols(Sexo = col_character(),Total=col_number()), 
-                   locale = locale(encoding = encoding,grouping_mark=".",decimal_mark = ","), 
-                   trim_ws = TRUE)
-  
-  names(df)[2]<-"Territorio"
-  
-  # Nos centramos solo en el ámbito Nacional
-  
-  df<-df %>%
-    filter(Nacional!="Extranjero")
-  
-  # Eliminamos la columna Nacional
-  
-  df<-df[-1]
-  
-  # Sustituímos los NAs por Nacional
-  
-  df <- df %>% replace_na(list(Territorio = "Nacional"))
-  
-  # Creamos la columna año:
-  
-  # Primero extraemos el año del nombre del archivo
-  
-  año_texto<- sub("_.*", "", CSE) #busca el patron y lo borra, así me quedo con la fecha
-  
-  # Ahora lo pasamos a variable tipo factor
-  
-  año<-factor(año_texto, levels = 2014:2023)
-  
-  df <- df %>%
-    mutate(Año = año)
-  
-  # Modificamos los nombres de las comunidades para que sea mas friendly
-  
-  df <- df %>%
-    mutate(
-      Territorio = Territorio %>%
-        # 1) Quitar espacios extremos
-        str_squish() %>%
-        # 2) Quitar prefijo numérico
-        str_remove("^\\d+\\s+") %>%
-        # 3) Quedarse con lo anterior a la primera coma
-        str_remove(",.*$") %>%
-        # 4) Casos excepcionales
-        str_replace("Balears", "Baleares")
-      
-  )
-
-  #Modificamos Sexo, Edad de la misma forma
-  df <- df %>%
-    mutate(
-      Edad = Edad %>%
-        str_replace("Todas.*", "Todas") %>%
-        str_replace("años", "") %>%
-        str_replace("De ", "") %>%
-        str_replace("Menores de ", "<") %>%
-        str_replace(" y más", "+") %>%
-        str_replace(" a ", "-")
-    
-  )
-
-  df <- df %>%
-    mutate(
-      Sexo = Sexo %>%
-        str_replace("Ambos.*", "Ambos")
-    
-  )
-  
-  df <- df %>%
-    filter(
-      Territorio != "Nacional",
-      Sexo != "Ambos",
-      Edad != "Todas"
-    )
-
-
-  #Ahora cabiaremos a tipo factor las otras columnas Territorio, Sexo, Edad
-
-  df <- df %>%
-    mutate(across(where(is.character), as.factor))
-  #Finalmente apilamos en un único dataframe los datos de cada año
-  
-  CSE_tidy <- CSE_tidy %>% rbind(df)
-  
-  # Reordenamos las columnas
-CSE_tidy <- CSE_tidy %>% 
-  select(Año,Territorio, Sexo, Edad, Total)
-
-# Para graficar la pirámide de población
-CSE_graf <- CSE_tidy %>%
-  # Para que un sexo se dibuje “hacia la izquierda” y otro hacia la derecha, una de las poblaciones debe ser negativa:
-  mutate(Total = ifelse(Sexo == "Hombres", -Total, Total)) %>%
-  filter(Sexo != "Ambos") %>%
-  filter(Edad != "Todas") %>%
-  filter(Territorio == "Nacional") %>%
-  select(Año,Sexo,Edad,Total)
-# Para graficar el mapa
-CSE_map <- CSE_tidy %>%
-  filter(Sexo == "Ambos") %>%
-  filter(Edad == "Todas") %>%
-  filter(Territorio != "Nacional") %>%
-  select(Año,Territorio,Total)
-}
-```
-
-Una vez importado el conjunto de datos de los suicidios repartidos por comunidad autónoma y su respectiva transformación a un conjunto en formato tidy, el resultante es un dataframe con las siguientes variables:
-
-```{r, echo=FALSE}
-colnames(CSE_tidy)
-```
-La clase de estas variables es la siguiente:
-
-```{r, echo=FALSE}
-str(CSE_tidy)
-```
-Siendo la variable `Año` un factor con los años de 2014 a 2023, la variable `Territorio` un factor con las 19 Comunidades Autónomas de España, incluyendo las ciudades autónomas, y un Total nacional, la variable `Sexo` un factor con dos niveles siendo estos Hombres y Mujeres; la variable `Edad` cuenta con 15 niveles siendo estos los siguientes:
-```{r, echo=FALSE}
-levels(CSE_tidy$Edad)
-```
-Finalmente la variable `Total` muestra el número de suicidios presentados en bajo las condiciones anteriormente explicadas. Se verifica la presencia de valores ausentes en la variable `Total` con el siguiente resultado:
-```{r, echo=FALSE}
-sum(is.na(CSE_tidy$Total))
-```
-
-
-
-
-## Nacionalidad y Sexo
-
-```{r, echo=FALSE}
-readr::guess_encoding(file="../data/2023ns.csv", n= 1000)
-
-# Se crea la función procesar_archivo_ns que hace tidy un solo archivo de ns
-
-procesar_archivo_ns <- function(archivo_ns) {
-  patron_ns <- "(\\d+)ns\\.csv"
-  matches_ns <- str_match(archivo_ns, patron_ns)
-  año_extraido_ns <- as.numeric(matches_ns[1, 2])
-
-# La expresión regular para sacar el año es: (\\d+) [que significa encuentra un dígito y lo que está después de él] ns [toma también "ns" literal] \\. [toma también un . literal] csv [toma también los caracteres csv] [de esta forma identifica el patrón específico de los archivos guardados de nacionalidad-sexo ns]
-# La función str_match empareja la ruta de los archivos ns con su respectivo patrón separado por año
-# Con año_extraido_ns 
-    
-  datos_ns_limpios <- read_delim(
-    archivo_ns,
-    delim = ";",
-    escape_double = FALSE,
-    trim_ws = TRUE,
-    locale = locale(encoding = "ISO-8859-1", decimal_mark = ","),
-    col_types = cols(
-      Edad = col_character(),
-      Nacionalidad = col_character(),
-      Sexo = col_character(),
-      Total = col_number()
-      ),
-    show_col_types = FALSE
-    ) %>%
-    
-# Con esta porción del código se importan los archivos ns de la carpeta data, con el encoding adecuado, y desde aquí se le asigna las columnas su tipo adecuado. show_col_types = F es para no llenar la consola de los tipos de las columnas  
-    
-    dplyr::filter(Edad == "Todas las edades") %>%
-    dplyr::filter(Nacionalidad != "Total" & Sexo != "Ambos sexos") %>%
-    select(Nacionalidad, Sexo, Total) %>%
-    mutate(
-      Año = factor(año_extraido_ns,levels = 2014:2023),
-      Nacionalidad = factor(Nacionalidad, levels = c("Española", "Extranjera", "No consta")),
-      Sexo = factor(Sexo, levels = c("Hombres", "Mujeres"))
-      ) %>%
-    select(Año, Nacionalidad, Sexo, Total)
-  return(datos_ns_limpios)
-}
-
-# Con esta porción de código se filtran las edades para que no muestre toda la segmentación sino que muestre los valores Totales (se aprovecha que desde el propio dataset original ya viene el número total de suicidios sumado), con el segundo filter se "eliminan" errores que venían en estas columnas como "Total" en Nacionalidades y "Ambos sexos" para de esta forma mostrar las 3 tipos de nacionalidad que interesa y los dos sexos. Se seleccionan las columnas que nos interesan, con el mutate se crea la columna Año con el año_extraido_ns definido en pasos anteriores, y las columnas Nacionalidad y Sexo se hacen factor con los valores respectivos. Con el último select se ordenan las columnas para que sea más fácil de entender al mirar la tabla. 
-
-lista_archivos_ns <- list.files(
-  path = "../data/",
-  pattern = "\\d+ns\\.csv$",
-  full.names = TRUE
-)
-
-# Con esta porción de código se crea una lista con los documentos que hay en la carpeta data que cumplen con el patrón de ns (explicado anteriormente) y toma tods esos archivos.
-
-datos_ns_tidy <- map_dfr(lista_archivos_ns, procesar_archivo_ns)
-
-# Se hace uso de una función de purrr que es map_dfr y lo que hace es que a la lista de archivos que cumplen con el patrón de ns les aplica la función de hacerlos tidy, y lo que hace es crear dataframes individuales que concatena en un gran dataframe con todos los archivos en formato tidy en 1
-```
-
-Una vez importada los datos de suicidios en España distribuidos por la nacionalidad de las personas, se cuenta con un dateframe que cuenta con cuatro variables siendo estas:
-
-```{r, echo=FALSE}
-print(colnames(datos_ns_tidy))
-```
-
-La clase de estas variable son:
-```{r, echo=FALSE}
-print(str(datos_ns_tidy))
-```
-
-Se tiene que la variable `Año` es un factor con niveles de 2014 a 2023, la variable `Nacionalidad` de las personas se trata como un factor de tres niveles siendo estos: Española, Extranjera y No Consta. Siendo el nivel "No consta" como personas que se han suicidado pero no se pudo comprobar la nacionalidad de la persona. 
-
-```{r, echo=FALSE}
-suicidios_barras_nacionalidad<-datos_ns_tidy%>%
-  group_by(Nacionalidad)%>%
-  summarise(Total_Suicidios=sum(Total),.groups="drop")%>%
-  mutate(Porcentaje=Total_Suicidios/sum(Total_Suicidios),
-         Etiqueta_Porcentaje=scales::percent(Porcentaje,accuracy=0.01))
-
-gr_barras_nacionalidad <- ggplot(suicidios_barras_nacionalidad,
-                                 aes(x = reorder(Nacionalidad, -Total_Suicidios),
-                                     y = Total_Suicidios,
-                                     fill = Nacionalidad)) +
-  geom_col() +
-  geom_text(
-    aes(label = Etiqueta_Porcentaje),
-    vjust = 1.5,
-    color = "white",
-    size = 4
-  ) +
-  labs(
-    title = "Proporción Total de Suicidios por Nacionalidad (2014-2023)",
-    fill = "Nacionalidad",
-    x = "Nacionalidad",
-    y = "Número Total de Suicidios"
-  ) +
-  theme_minimal() +
-  theme(
-    plot.title = element_text(hjust = 0.5, size = 16),
-    legend.position = "none" 
-  )
-
-print(gr_barras_nacionalidad)
-
-```
-
-Como se puede observar en este gráfico, la proporción de datos de suicidios de personas de las que no se cuenta la nacionalidad es sumamente bajo. Por esta razón se prescindirán de estos registros para el análisis posterior de los datos segmentados por la nacionalidad de las personas.  
-
-La variable `Sexo` cuenta con niveles Hombre y Mujer, y el número de suicidios se muestra en la variable `Total` y es de tipo numérica.
-Se tiene un total de 60 datos, donde se muestran el total de suicidios registrados por año, y la información dividida por la nacionalidad de las personas. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- ## Tidy dataset CA, Sexo y Edad -->
+
+<!-- ```{r, echo=FALSE} -->
+<!-- # Cargar la ubicación del archivo -->
+
+<!-- archivos<-list.files("../data") -->
+
+<!-- # Filtramos por los que terminan en _CSE.csv usando una expresion regular -->
+<!-- archivos<-grep("CSE\\.csv$", archivos, value = TRUE) -->
+
+<!-- # Creamos un df vacío en el que almacenar nuestros datos tratados y limpios -->
+<!-- CSE_tidy<-data.frame() -->
+
+<!-- for (CSE in archivos){ -->
+
+<!--   # Generamos la ruta del archivo -->
+
+<!--   ruta <- paste0("../data/",CSE) -->
+
+<!--   # Cargamos el dataframe -->
+
+<!--   encoding<-guess_encoding(ruta)[[1]][1] -->
+
+<!--   df <- read_delim(ruta, delim = ";",  -->
+<!--                    escape_double = FALSE, col_types = cols(Sexo = col_character(),Total=col_number()),  -->
+<!--                    locale = locale(encoding = encoding,grouping_mark=".",decimal_mark = ","),  -->
+<!--                    trim_ws = TRUE) -->
+
+<!--   names(df)[2]<-"Territorio" -->
+
+<!--   # Nos centramos solo en el ámbito Nacional -->
+
+<!--   df<-df %>% -->
+<!--     filter(Nacional!="Extranjero") -->
+
+<!--   # Eliminamos la columna Nacional -->
+
+<!--   df<-df[-1] -->
+
+<!--   # Sustituímos los NAs por Nacional -->
+
+<!--   df <- df %>% replace_na(list(Territorio = "Nacional")) -->
+
+<!--   # Creamos la columna año: -->
+
+<!--   # Primero extraemos el año del nombre del archivo -->
+
+<!--   año_texto<- sub("_.*", "", CSE) #busca el patron y lo borra, así me quedo con la fecha -->
+
+<!--   # Ahora lo pasamos a variable tipo factor -->
+
+<!--   año<-factor(año_texto, levels = 2014:2023) -->
+
+<!--   df <- df %>% -->
+<!--     mutate(Año = año) -->
+
+<!--   # Modificamos los nombres de las comunidades para que sea mas friendly -->
+
+<!--   df <- df %>% -->
+<!--     mutate( -->
+<!--       Territorio = Territorio %>% -->
+<!--         # 1) Quitar espacios extremos -->
+<!--         str_squish() %>% -->
+<!--         # 2) Quitar prefijo numérico -->
+<!--         str_remove("^\\d+\\s+") %>% -->
+<!--         # 3) Quedarse con lo anterior a la primera coma -->
+<!--         str_remove(",.*$") %>% -->
+<!--         # 4) Casos excepcionales -->
+<!--         str_replace("Balears", "Baleares") -->
+
+<!--   ) -->
+
+<!--   #Modificamos Sexo, Edad de la misma forma -->
+<!--   df <- df %>% -->
+<!--     mutate( -->
+<!--       Edad = Edad %>% -->
+<!--         str_replace("Todas.*", "Todas") %>% -->
+<!--         str_replace("años", "") %>% -->
+<!--         str_replace("De ", "") %>% -->
+<!--         str_replace("Menores de ", "<") %>% -->
+<!--         str_replace(" y más", "+") %>% -->
+<!--         str_replace(" a ", "-") -->
+
+<!--   ) -->
+
+<!--   df <- df %>% -->
+<!--     mutate( -->
+<!--       Sexo = Sexo %>% -->
+<!--         str_replace("Ambos.*", "Ambos") -->
+
+<!--   ) -->
+
+<!--   df <- df %>% -->
+<!--     filter( -->
+<!--       Territorio != "Nacional", -->
+<!--       Sexo != "Ambos", -->
+<!--       Edad != "Todas" -->
+<!--     ) -->
+
+
+<!--   #Ahora cabiaremos a tipo factor las otras columnas Territorio, Sexo, Edad -->
+
+<!--   df <- df %>% -->
+<!--     mutate(across(where(is.character), as.factor)) -->
+<!--   #Finalmente apilamos en un único dataframe los datos de cada año -->
+
+<!--   CSE_tidy <- CSE_tidy %>% rbind(df) -->
+
+<!--   # Reordenamos las columnas -->
+<!-- CSE_tidy <- CSE_tidy %>%  -->
+<!--   select(Año,Territorio, Sexo, Edad, Total) -->
+
+<!-- # Para graficar la pirámide de población -->
+<!-- CSE_graf <- CSE_tidy %>% -->
+<!--   # Para que un sexo se dibuje “hacia la izquierda” y otro hacia la derecha, una de las poblaciones debe ser negativa: -->
+<!--   mutate(Total = ifelse(Sexo == "Hombres", -Total, Total)) %>% -->
+<!--   filter(Sexo != "Ambos") %>% -->
+<!--   filter(Edad != "Todas") %>% -->
+<!--   filter(Territorio == "Nacional") %>% -->
+<!--   select(Año,Sexo,Edad,Total) -->
+<!-- # Para graficar el mapa -->
+<!-- CSE_map <- CSE_tidy %>% -->
+<!--   filter(Sexo == "Ambos") %>% -->
+<!--   filter(Edad == "Todas") %>% -->
+<!--   filter(Territorio != "Nacional") %>% -->
+<!--   select(Año,Territorio,Total) -->
+<!-- } -->
+<!-- ``` -->
+
+<!-- Una vez importado el conjunto de datos de los suicidios repartidos por comunidad autónoma y su respectiva transformación a un conjunto en formato tidy, el resultante es un dataframe con las siguientes variables: -->
+
+<!-- ```{r, echo=FALSE} -->
+<!-- colnames(CSE_tidy) -->
+<!-- ``` -->
+<!-- La clase de estas variables es la siguiente: -->
+
+<!-- ```{r, echo=FALSE} -->
+<!-- str(CSE_tidy) -->
+<!-- ``` -->
+<!-- Siendo la variable `Año` un factor con los años de 2014 a 2023, la variable `Territorio` un factor con las 19 Comunidades Autónomas de España, incluyendo las ciudades autónomas, y un Total nacional, la variable `Sexo` un factor con dos niveles siendo estos Hombres y Mujeres; la variable `Edad` cuenta con 15 niveles siendo estos los siguientes: -->
+<!-- ```{r, echo=FALSE} -->
+<!-- levels(CSE_tidy$Edad) -->
+<!-- ``` -->
+<!-- Finalmente la variable `Total` muestra el número de suicidios presentados en bajo las condiciones anteriormente explicadas. Se verifica la presencia de valores ausentes en la variable `Total` con el siguiente resultado: -->
+<!-- ```{r, echo=FALSE} -->
+<!-- sum(is.na(CSE_tidy$Total)) -->
+<!-- ``` -->
+
+
+
+
+<!-- ## Nacionalidad y Sexo -->
+
+<!-- ```{r, echo=FALSE} -->
+<!-- readr::guess_encoding(file="../data/2023ns.csv", n= 1000) -->
+
+<!-- # Se crea la función procesar_archivo_ns que hace tidy un solo archivo de ns -->
+
+<!-- procesar_archivo_ns <- function(archivo_ns) { -->
+<!--   patron_ns <- "(\\d+)ns\\.csv" -->
+<!--   matches_ns <- str_match(archivo_ns, patron_ns) -->
+<!--   año_extraido_ns <- as.numeric(matches_ns[1, 2]) -->
+
+<!-- # La expresión regular para sacar el año es: (\\d+) [que significa encuentra un dígito y lo que está después de él] ns [toma también "ns" literal] \\. [toma también un . literal] csv [toma también los caracteres csv] [de esta forma identifica el patrón específico de los archivos guardados de nacionalidad-sexo ns] -->
+<!-- # La función str_match empareja la ruta de los archivos ns con su respectivo patrón separado por año -->
+<!-- # Con año_extraido_ns  -->
+
+<!--   datos_ns_limpios <- read_delim( -->
+<!--     archivo_ns, -->
+<!--     delim = ";", -->
+<!--     escape_double = FALSE, -->
+<!--     trim_ws = TRUE, -->
+<!--     locale = locale(encoding = "ISO-8859-1", decimal_mark = ","), -->
+<!--     col_types = cols( -->
+<!--       Edad = col_character(), -->
+<!--       Nacionalidad = col_character(), -->
+<!--       Sexo = col_character(), -->
+<!--       Total = col_number() -->
+<!--       ), -->
+<!--     show_col_types = FALSE -->
+<!--     ) %>% -->
+
+<!-- # Con esta porción del código se importan los archivos ns de la carpeta data, con el encoding adecuado, y desde aquí se le asigna las columnas su tipo adecuado. show_col_types = F es para no llenar la consola de los tipos de las columnas   -->
+
+<!--     dplyr::filter(Edad == "Todas las edades") %>% -->
+<!--     dplyr::filter(Nacionalidad != "Total" & Sexo != "Ambos sexos") %>% -->
+<!--     select(Nacionalidad, Sexo, Total) %>% -->
+<!--     mutate( -->
+<!--       Año = factor(año_extraido_ns,levels = 2014:2023), -->
+<!--       Nacionalidad = factor(Nacionalidad, levels = c("Española", "Extranjera", "No consta")), -->
+<!--       Sexo = factor(Sexo, levels = c("Hombres", "Mujeres")) -->
+<!--       ) %>% -->
+<!--     select(Año, Nacionalidad, Sexo, Total) -->
+<!--   return(datos_ns_limpios) -->
+<!-- } -->
+
+<!-- # Con esta porción de código se filtran las edades para que no muestre toda la segmentación sino que muestre los valores Totales (se aprovecha que desde el propio dataset original ya viene el número total de suicidios sumado), con el segundo filter se "eliminan" errores que venían en estas columnas como "Total" en Nacionalidades y "Ambos sexos" para de esta forma mostrar las 3 tipos de nacionalidad que interesa y los dos sexos. Se seleccionan las columnas que nos interesan, con el mutate se crea la columna Año con el año_extraido_ns definido en pasos anteriores, y las columnas Nacionalidad y Sexo se hacen factor con los valores respectivos. Con el último select se ordenan las columnas para que sea más fácil de entender al mirar la tabla.  -->
+
+<!-- lista_archivos_ns <- list.files( -->
+<!--   path = "../data/", -->
+<!--   pattern = "\\d+ns\\.csv$", -->
+<!--   full.names = TRUE -->
+<!-- ) -->
+
+<!-- # Con esta porción de código se crea una lista con los documentos que hay en la carpeta data que cumplen con el patrón de ns (explicado anteriormente) y toma tods esos archivos. -->
+
+<!-- datos_ns_tidy <- map_dfr(lista_archivos_ns, procesar_archivo_ns) -->
+
+<!-- # Se hace uso de una función de purrr que es map_dfr y lo que hace es que a la lista de archivos que cumplen con el patrón de ns les aplica la función de hacerlos tidy, y lo que hace es crear dataframes individuales que concatena en un gran dataframe con todos los archivos en formato tidy en 1 -->
+<!-- ``` -->
+
+<!-- Una vez importada los datos de suicidios en España distribuidos por la nacionalidad de las personas, se cuenta con un dateframe que cuenta con cuatro variables siendo estas: -->
+
+<!-- ```{r, echo=FALSE} -->
+<!-- print(colnames(datos_ns_tidy)) -->
+<!-- ``` -->
+
+<!-- La clase de estas variable son: -->
+<!-- ```{r, echo=FALSE} -->
+<!-- print(str(datos_ns_tidy)) -->
+<!-- ``` -->
+
+<!-- Se tiene que la variable `Año` es un factor con niveles de 2014 a 2023, la variable `Nacionalidad` de las personas se trata como un factor de tres niveles siendo estos: Española, Extranjera y No Consta. Siendo el nivel "No consta" como personas que se han suicidado pero no se pudo comprobar la nacionalidad de la persona.  -->
+
+<!-- ```{r, echo=FALSE} -->
+<!-- suicidios_barras_nacionalidad<-datos_ns_tidy%>% -->
+<!--   group_by(Nacionalidad)%>% -->
+<!--   summarise(Total_Suicidios=sum(Total),.groups="drop")%>% -->
+<!--   mutate(Porcentaje=Total_Suicidios/sum(Total_Suicidios), -->
+<!--          Etiqueta_Porcentaje=scales::percent(Porcentaje,accuracy=0.01)) -->
+
+<!-- gr_barras_nacionalidad <- ggplot(suicidios_barras_nacionalidad, -->
+<!--                                  aes(x = reorder(Nacionalidad, -Total_Suicidios), -->
+<!--                                      y = Total_Suicidios, -->
+<!--                                      fill = Nacionalidad)) + -->
+<!--   geom_col() + -->
+<!--   geom_text( -->
+<!--     aes(label = Etiqueta_Porcentaje), -->
+<!--     vjust = 1.5, -->
+<!--     color = "white", -->
+<!--     size = 4 -->
+<!--   ) + -->
+<!--   labs( -->
+<!--     title = "Proporción Total de Suicidios por Nacionalidad (2014-2023)", -->
+<!--     fill = "Nacionalidad", -->
+<!--     x = "Nacionalidad", -->
+<!--     y = "Número Total de Suicidios" -->
+<!--   ) + -->
+<!--   theme_minimal() + -->
+<!--   theme( -->
+<!--     plot.title = element_text(hjust = 0.5, size = 16), -->
+<!--     legend.position = "none"  -->
+<!--   ) -->
+
+<!-- print(gr_barras_nacionalidad) -->
+
+<!-- ``` -->
+
+<!-- Como se puede observar en este gráfico, la proporción de datos de suicidios de personas de las que no se cuenta la nacionalidad es sumamente bajo. Por esta razón se prescindirán de estos registros para el análisis posterior de los datos segmentados por la nacionalidad de las personas.   -->
+
+<!-- La variable `Sexo` cuenta con niveles Hombre y Mujer, y el número de suicidios se muestra en la variable `Total` y es de tipo numérica. -->
+<!-- Se tiene un total de 60 datos, donde se muestran el total de suicidios registrados por año, y la información dividida por la nacionalidad de las personas.  -->
 
 # Results
 
