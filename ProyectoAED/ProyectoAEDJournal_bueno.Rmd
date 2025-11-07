@@ -1,143 +1,70 @@
 ---
-title: "Suicidios en España año 2014-2023"
+title: "Análisis de los Suicidios Registrados en España en el Periodo 2014-2023"
 author:
-  - name: "Fabián Calvo"
-  - name: "Mario Martínez"
-  - name: "Axel Valton"
+  - name: "Fabián Calvo Castillo"
+    allfil: "1"
+  - name: "Mario Martínez Guillen"
+    allfil: "1"
+  - name: "Axel Valton Juan"
+    allfil: "1"
 
 affiliation:
   - num: 1
     address: |
-      Muenster University of Applied Sciences - 
-      Institute for Infrastructure, Water, Resources, Environment
-      Correnstr. 25, 48149 Muenster, Germany
-    email: leutnant@fh-muenster.de
-  - num: 2
-    address: |
-      Your department
-      Street, City, Country
-    email: mail@mail.com
+      Máster Universitario en Ciencia de Datos -
+      Universitat de València -
+      ETSE 
+    email: "facalcas@alumni.uv.es"
 
 authorcitation: |
-  Leutnant, D.; Doe, J.
-
-firstnote: |
-  Current address: Updated affiliation
-
-secondnote: |
-  These authors contributed equally to this work.
+  Calvo, F.; Martínez, M.; Valton, A.
 
 correspondence: |
-  leutnant@fh-muenster.de; Tel.: +XX-000-00-0000.
+  marcelino.martinez@uv.es;
 
 journal: notspecified
 type: article
 status: submit
 
 simplesummary: |
-  A Simple summary goes here.
+  Proyecto Análisis Exploratorio de los Datos.
 
 abstract: |
-  A single paragraph of about 200 words maximum. For research articles, 
-  abstracts should give a pertinent overview of the work. We strongly encourage
-  authors to use the following style of structured abstracts, but without 
-  headings: 1) Background: Place the question addressed in a broad context and
-  highlight the purpose of the study; 2) Methods: Describe briefly the main
-  methods or treatments applied; 3) Results: Summarize the article's main 
-  findings; and 4) Conclusion: Indicate the main conclusions or interpretations. 
-  The abstract should be an objective representation of the article, it must not 
-  contain results which are not presented and substantiated in the main text and 
-  should not exaggerate the main conclusions.
+  Una vez finalizado el proyecto hacer el Abstract, resumen de lo que se hizo y se concluyó no superior a las 200 palabras.
+
 
 keywords: |
-  keyword 1; keyword 2; keyword 3 (list three to ten pertinent keywords specific 
-  to the article, yet reasonably common within the subject discipline.).
+  Suicidios; Mortalidad por Suicidio; España; Estadísticas de Mortalidad; Salud Pública; Análisis Exploratorio de Datos; Visualización de Datos 
+  
 
 acknowledgement: |
-  All sources of funding of the study should be disclosed. Please clearly 
-  indicate grants that you have received in support of your research work. 
-  Clearly state if you received funds for covering the costs to publish in open 
-  access.
-
+  
 authorcontributions: |
-  For research articles with several authors, a short paragraph specifying their 
-  individual contributions must be provided. The following statements should be 
-  used ``X.X. and Y.Y. conceive and designed the experiments; X.X. performed the 
-  experiments; X.X. and Y.Y. analyzed the data; W.W. contributed 
-  reagents/materials/analysis tools; Y.Y. wrote the paper.'' Authorship must be
-  limited to those who have contributed substantially to the work reported.
-
+  
 funding: |
-  Please add: ``This research received no external funding'' or ``This research 
-  was funded by NAME OF FUNDER grant number XXX.'' and  and ``The APC was funded 
-  by XXX''. Check carefully that the details given are accurate and use the 
-  standard spelling of funding agency names at 
-  \url{https://search.crossref.org/funding}, any errors may affect your future 
-  funding.
+  This research received no external funding.
 
 institutionalreview: |
-  In this section, you should add the Institutional Review Board Statement and 
-  approval number, if relevant to your study. You might choose to exclude 
-  this statement if the study did not require ethical approval. Please note 
-  that the Editorial Office might ask you for further information. Please add 
-  “The study was conducted in accordance with the Declaration of Helsinki, 
-  and approved by the Institutional Review Board (or Ethics Committee) of 
-  NAME OF INSTITUTE (protocol code XXX and date of approval).” for studies 
-  involving humans. OR “The animal study protocol was approved by the 
-  Institutional Review Board (or Ethics Committee) of NAME OF INSTITUTE 
-  (protocol code XXX and date of approval).” for studies involving animals. 
-  OR “Ethical review and approval were waived for this study due to REASON 
-  (please provide a detailed justification).” OR “Not applicable” for
-   studies not involving humans or animals.
+  Not applicable.
 
 informedconsent: |
-  Any research article describing a study involving humans should contain this 
-  statement. Please add ``Informed consent was obtained from all subjects 
-  involved in the study.'' OR ``Patient consent was waived due to REASON 
-  (please provide a detailed justification).'' OR ``Not applicable'' for 
-  studies not involving humans. You might also choose to exclude this statement 
-  if the study did not involve humans.
-  
-  Written informed consent for publication must be obtained from participating 
-  patients who can be identified (including by the patients themselves). Please 
-  state ``Written informed consent has been obtained from the patient(s) to 
-  publish this paper'' if applicable.
+  Not applicable.
 
 dataavailability: |
-  We encourage all authors of articles published in MDPI journals to share 
-  their research data. In this section, please provide details regarding where 
-  data supporting reported results can be found, including links to publicly 
-  archived datasets analyzed or generated during the study. Where no new data 
-  were created, or where data is unavailable due to privacy or ethical 
-  re-strictions, a statement is still required. Suggested Data Availability 
-  Statements are available in section “MDPI Research Data Policies” at 
-  \url{https://www.mdpi.com/ethics}.
+  Los datos analizados en este estudio están disponibles públicamente y fueron 
+  obtenidos del Instituto Nacional de Estadística (INE).
+  https://ine.es/dyngs/INEbase/operacion.htm?c=Estadistica_C&cid=1254736176780&menu=resultados&idp=1254735573175#_tabs-1254736194710
 
 conflictsofinterest: |
-  Declare conflicts of interest or state 'The authors declare no conflict of 
-  interest.' Authors must identify and declare any personal circumstances or
-  interest that may be perceived as inappropriately influencing the
-  representation or interpretation of reported research results. Any role of the
-  funding sponsors in the design of the study; in the collection, analyses or 
-  interpretation of data in the writing of the manuscript, or in the decision to 
-  publish the results must be declared in this section. If there is no role, 
-  please state 'The founding sponsors had no role in the design of the study; 
-  in the collection, analyses, or interpretation of data; in the writing of the 
-  manuscript, an in the decision to publish the results'.
+  The authors declare no conflict of interest.
 
 supplementary: |
- The following supporting information can be downloaded at:  
- \linksupplementary{s1}, Figure S1: title; Table S1: title; Video S1: title.
-
+ 
 abbreviations:
   - short: MDPI
     long: Multidisciplinary Digital Publishing Institute
-  - short: DOAJ
-    long: Directory of open access journals
-  - short: TLA
-    long: Three letter acronym
-  - short: LD 
-    long: linear dichroism
+  - short: INE
+    long: Instituto Nacional de Estadística
 
 bibliography: mybibfile.bib
 appendix: appendix.tex
@@ -149,130 +76,348 @@ output:
 ---
 
 
-# Version
+# Introducción
 
-This Rmd-skeleton uses the mdpi Latex template published 2024-03-21. 
-However, the official template gets more frequently updated than the **rticles**
-package. Therefore, please make sure prior to paper submission, that you're 
-using the most recent .cls, .tex and .bst files 
-(available [here](http://www.mdpi.com/authors/latex)).
+El suicidio representa un grave problema de salud pública en España, y en todo el mundo, cuya compresión es fundamental para el desarrollo de estrategias de prevención efectivas. El análisis de datos sobre este tema es el primer paso para hacer frente a la problemática con una base empírica sólida para la toma de decisiones.
+Este estudio realiza un análisis exploratorio de los datos registrados a la mortalidad por suicidio en España durante el periodo de 2014 al 2023. El objetivo principal es identificar y describir patrones, tendencias, disparidades demográficas, geográficas y etarias en los datos registrados por el INE. Se busca responder preguntas clave sobre la distribución de los suicidios a lo largo del tiempo en territorio español.
+Para alcanzar este objetivo, el análisis se estructura en torno a tres conjuntos de datos diferenciados, el primero de ellos examina la distribución de casos por año, comunidad autónoma, sexo y edad. El segundo conjunto presenta datos repartidos por el mes en el que ocurrió el suceso. Finalmente el tercer conjunto introduce la variable nacionalidad, sobre los casos de mortalidad por suicidio registrados en España.
+A través de la exploración y visualización de dichas variables, el trabajo pretende describir la magnitud de la problemática que se enfrenta, y también identificar relaciones entre las variables analizadas. 
 
-# Article Header Information
+# Método
 
-The YAML header includes information needed mainly for formatting the front and 
-back matter of the article. Required elements include:
+## Preparación y Adquisición de los Datos
 
-```yaml
-title: Title of the paper
-author:
-  - name: first and last name
-    affil: |
-      One or more comma seperated numbers corresponding to affilitation
-      and one or more  comma seperated symbols corresponding 
-      optional notes.
-    orcid: optional orcid number
-affiliation:  
-  - num: 1,..., n for each affiliation
-    address: required
-    email: required
-authorcitation: |
-  Lastname, F.
-correspondence: |
-  email@email.com; Tel.: +XX-000-00-0000.
-journal: notspecified
-type: article
-status: submit
+El análisis se fundamenta en los datos de mortalidad por suicidio en España para el periodo de 2014 a 2023, proporcionados por el INE.
+El punto de partida consistió en múltiples archivos .csv (uno para cada año de estudio), los cuales presentaban un formato estructurado, pero con trabajo por hacer en cuanto al formato de columnas y su distinción por año.
+Las librerías utilizadas para este análisis se presentan acontinuación.
+```{r}
+pacman::p_load(tidyverse,lubridate,dplyr,stringr,readr,purrr)
+```
+El primer paso fue verificar la codificación de los conjuntos de datos, con el resultado que los conjuntos de Nacionalidad y Sexo y el conjunto de Comunidad Autónoma, Sexo y Edad comparten codificación, siendo esta la `ISO-8859-1`. Mientras que el conjunto de datos de Mes, Sexo y Edad presenta una codificación de `UTF-8`.
+
+```{r Codificacion ns, include=FALSE}
+guess_encoding("../data/2014ns.csv")
 ```
 
-Journal options are in Table \ref{tab:mdpinames}. The `status` variable should 
-generally not be changed by authors. The `type` variable describes 
-the type of of submission and defaults to `article` but can be replaced with any of the ones in Table \ref{tab:mdpitype}
-
-```{r mdpitype, echo = FALSE}
-type <- c("abstract, addendum, article, book, bookreview, briefreport, 
-casereport, comment, commentary, communication, conferenceproceedings, 
-correction, conferencereport, entry, expressionofconcern, extendedabstract, 
-datadescriptor, editorial, essay, erratum, hypothesis, interestingimage, 
-obituary, opinion, projectreport, reply, retraction, review, perspective, 
-protocol, shortnote, studyprotocol, systematicreview, supfile, 
-technicalnote, viewpoint, guidelines, registeredreport, tutorial")
-knitr::kable(rticles::string_to_table(type, 3), 
-             col.names = NULL, format = "latex", booktab = TRUE, 
-             caption = "MDPI article types.")
+```{r Codificacion CSE, include=FALSE}
+guess_encoding("../data/2014_CSE.csv")
 ```
 
-## Journal Specific YAML variables
+```{r Codificación MSE, include=FALSE}
+guess_encoding("../data/2014_MSE.csv")
+```
 
-```yaml
-# for journal Diversity,
-# add the Life Science Identifier using:
-lsid: http://zoobank.org/urn:lsid:zoobank.org:act:nnnn
+Por esta razón, la importación de los conjuntos de datos se realiza en la codificación respectiva, y el análisis y graficación de los datos parte de la codificación asignada.
+
+```{r MSE a Tidy, include=FALSE}
+MSE <- data.frame(
+  "Mes de defunción" = character(),
+  Sexo = character(),
+  Edad = character(),
+  Total = numeric(),
+  stringsAsFactors = FALSE
+)
+
+colnames(MSE)[1] <- "Mes de defunción"
+
+cargar_y_añadir_MSE <- function(MSE, archivo){
+  MSE_año <- read_delim(paste0("../data/",archivo), 
+    delim = ";", escape_double = FALSE, trim_ws = TRUE, locale = locale(grouping_mark = ".",encoding="UTF-8"))
+  MSE_año$Año <- gsub(pattern = "_[^1-9]*","", x = archivo)
+  MSE <- rbind(MSE,MSE_año)
+  return(MSE)
+}
+
+lista_archivos <- grep(x = list.files("../data"), pattern="[1-9]*_MSE.*", value= TRUE)
+for (archivo in lista_archivos){
+  MSE <- cargar_y_añadir_MSE(MSE, archivo)
+}
+
+MSE[colnames(MSE)!="Total"] <- as.data.frame(lapply(MSE[colnames(MSE)!="Total"],as.factor))
+
+colnames(MSE)[colnames(MSE)=="Total"] <- "Total_suicidios"
+
+MSE <- MSE %>% 
+  select(Año,"Mes de defunción", Sexo, Edad, Total_suicidios)
+```
+
+```{r CSE a Tidy, include=FALSE}
+archivos<-list.files("../data")
+
+archivos<-grep("CSE\\.csv$", archivos, value = TRUE)
+
+CSE_tidy<-data.frame()
+
+for (CSE in archivos){
+  ruta <- paste0("../data/",CSE)
+  encoding<-guess_encoding(ruta)[[1]][1]
+  
+  df <- read_delim(ruta, delim = ";", 
+                   escape_double = FALSE, col_types = cols(Sexo = col_character(),Total=col_number()), 
+                   locale = locale(encoding = encoding,grouping_mark=".",decimal_mark = ","), 
+                   trim_ws = TRUE)
+  
+  names(df)[2]<-"Territorio"
+  
+  df<-df %>%
+    filter(Nacional!="Extranjero")
+  
+  df<-df[-1]
+  
+  df <- df %>% replace_na(list(Territorio = "Nacional"))
+  
+  año_texto<- sub("_.*", "", CSE)
+  
+  año<-factor(año_texto, levels = 2014:2023)
+  
+  df <- df %>%
+    mutate(Año = año)
+  
+  df <- df %>%
+    mutate(
+      Territorio = Territorio %>%
+        str_squish() %>%
+        str_remove("^\\d+\\s+") %>%
+        str_remove(",.*$") %>%
+        str_replace("Balears", "Baleares")
+  )
+
+  df <- df %>%
+    mutate(
+      Edad = Edad %>%
+        str_replace("Todas.*", "Todas") %>%
+        str_replace("años", "") %>%
+        str_replace("De ", "") %>%
+        str_replace("Menores de ", "<") %>%
+        str_replace(" y más", "+") %>%
+        str_replace(" a ", "-")
+  )
+
+  df <- df %>%
+    mutate(
+      Sexo = Sexo %>%
+        str_replace("Ambos.*", "Ambos")
+  )
+  
+  df <- df %>%
+    filter(
+      Territorio != "Nacional",
+      Sexo != "Ambos",
+      Edad != "Todas"
+    )
+
+  df <- df %>%
+    mutate(across(where(is.character), as.factor))
+
+  CSE_tidy <- CSE_tidy %>% rbind(df)
+
+CSE_tidy <- CSE_tidy %>% 
+  select(Año,Territorio, Sexo, Edad, Total)
+
+# # Para graficar la pirámide de población
+# CSE_graf <- CSE_tidy %>%
+#   # Para que un sexo se dibuje “hacia la izquierda” y otro hacia la derecha, una de las poblaciones debe ser negativa:
+#   mutate(Total = ifelse(Sexo == "Hombres", -Total, Total)) %>%
+#   filter(Sexo != "Ambos") %>%
+#   filter(Edad != "Todas") %>%
+#   filter(Territorio == "Nacional") %>%
+#   select(Año,Sexo,Edad,Total)
+# # Para graficar el mapa
+# CSE_map <- CSE_tidy %>%
+#   filter(Sexo == "Ambos") %>%
+#   filter(Edad == "Todas") %>%
+#   filter(Territorio != "Nacional") %>%
+#   select(Año,Territorio,Total)
+ }
+```
+
+```{r ns a Tidy, include=FALSE}
+procesar_archivo_ns <- function(archivo_ns) {
+  patron_ns <- "(\\d+)ns\\.csv"
+  matches_ns <- str_match(archivo_ns, patron_ns)
+  año_extraido_ns <- as.numeric(matches_ns[1, 2])
+
+  datos_ns_limpios <- read_delim(
+    archivo_ns,
+    delim = ";",
+    escape_double = FALSE,
+    trim_ws = TRUE,
+    locale = locale(encoding = "ISO-8859-1", decimal_mark = ","),
+    col_types = cols(
+      Edad = col_character(),
+      Nacionalidad = col_character(),
+      Sexo = col_character(),
+      Total = col_number()
+      ),
+    show_col_types = FALSE
+    ) %>%
+    
+    filter(Edad == "Todas las edades") %>%
+    filter(Nacionalidad != "Total" & Sexo != "Ambos sexos") %>%
+    select(Nacionalidad, Sexo, Total) %>%
+    mutate(
+      Año = factor(año_extraido_ns,levels = 2014:2023),
+      Nacionalidad = factor(Nacionalidad, levels = c("Española", "Extranjera", "No consta")),
+      Sexo = factor(Sexo, levels = c("Hombres", "Mujeres"))
+      ) %>%
+    select(Año, Nacionalidad, Sexo, Total)
+  return(datos_ns_limpios)
+}
+
+lista_archivos_ns <- list.files(
+  path = "../data/",
+  pattern = "\\d+ns\\.csv$",
+  full.names = TRUE
+)
+
+datos_ns_tidy <- map_dfr(lista_archivos_ns, procesar_archivo_ns)
+```
+
+Se destacan tareas de transformación y limpieza que se realizaron en los conjuntos de datos seleccionados como la creación de una variable `Año` para cada uno de los conjuntos, debido a que en los ficheros originales descargados desde la página del INE no se contaba con esta variable. Se implementó una función que mediante el uso de expresiones regulares extraía el año (proveniente del nombre del fichero .csv), y se crea la variable `Año` en base a esta extracción. También se destaca la gestión de la respectiva codificación del conjunto de datos para evitar problemas al importar los conjuntos además de la corrección en los tipos de datos, referentes a la variables numéricas y categóricas que cada dataset presenta.
+Una vez los ficheros se han tratado, se procede a su concatenación para la creación de los tres respectivos conjuntos de datos que serán utilizados para el análisis en el proyecto.
 
 
-# for journal Applied Sciences
-# add featured application
-featuredapplication: |
-  Authors are encouraged to provide a concise 
-  description of the specific application or 
-  a potential application of the work. This 
-  section is not mandatory.
+## Inspección de los Datos
 
-# for the journal Data
-# add dataset doi and license
-dataset: https://doi.org/10.1000/182
-datasetlicense: CC-BY-4.0
+Con los datos consolidados, se realiza la explicación de las variables con las que se cuenta para el análisis, y diversas características presentes en cada uno de los datasets.
 
-# for the journal Toxins
-# add key contributions
-keycontributions: |
-  The breakthroughs or highlights of the manuscript. 
-  Authors can write one or two sentences to describe 
-  the most important part of the paper.
+Tras transformar nuestro dataset a formato `tidy` y haber concatenado los distintos años, vamos a analizar un poco cada una de las variables.
 
-# for the journal Encyclopedia
-encyclopediadef: |
-  For entry manuscripts only: please provide a brief overview
-  of the entry title instead of an abstract.
-entrylink: The Link to this entry published on the encyclopedia platform.
+Nuestras variables en este conjunto de datos son las siguientes:
 
-# for the journal Advances in Respiratory Medicine
-# add highlights
-addhighlights: |
-  This is an obligatory section in “Advances in Respiratory Medicine”, 
-  whose goal is to increase the discoverability and readability of the
-  article via search engines and other scholars. Highlights should not 
-  be a copy of the abstract, but a simple text allowing the reader to 
-  quickly and simplified find out what the article is about and what can 
-  be cited from it. Each of these parts should be devoted up to 2~bullet 
-  points.
 
+```{r, echo = FALSE}
+str(MSE)
+```
+Vemos pues que disponemos de 5 variables llamadas `Año`, `Mes de defunción`,`Sexo`,`Edad` y `Total_suicidios`. Los nombres de estas vemos que son suficientemente representativos, y todas son de tipo factor excepto la de `Total_suicidios` que es numérica. Nótese que la variable año se ha codificado como factor en lugar de fecha porque únicamente sirve como representación categórica para clasificar anualmente los datos.
+
+Vamos a inspeccionar un poco cada una de las variables.
+
+En cuanto al `Año`, si miramos los distintos valores que puede tomar vemos que efectivamente tenemos datos de los años desde 2014 hasta 2023.
+
+```{r, echo=FALSE}
+levels(MSE$Año)
+```
+Por otro lado, como cabría esperar la variable `Mes de defunción` dispone de todos los meses del año, pero vemos una particularidad, tenemos un agregado de "Todos los meses":
+
+
+En cuanto al `Sexo` disponemos de "Hombres" y "Mujeres" y, además, de nuevo tenemos un agregado de "Ambos sexos".
+
+```{r, echo=FALSE}
+levels(MSE$Sexo)
+```
+
+Para la última variable tipo factor (`Edad`) tenemos las siguientes categorías:
+
+```{r, echo=FALSE}
+levels(MSE$Edad)
+```
+
+Como podemos observar, tenemos también un agregado de "Todas las edades".
+
+En vista de los datos tipo factor, realizamos una reordenación de los meses y las edades, así como una eliminación de las filas correspondientes a los registros "Ambos sexos","Todas las edades" y "Todos los meses".
+
+```{r, echo=FALSE}
+library(tidyverse)
+MSE$`Mes de defunción` <- factor(MSE$`Mes de defunción`, levels=c("enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre", "Todos los meses"))
+
+MSE$Edad <- factor(MSE$Edad, levels=c("Todas las edades","Menores de 15 años","De 15 a 29 años","De 30 a 39 años","De 40 a 44 años","De 45 a 49 años","De 50 a 54 años","De 55 a 59 años","De 60 a 64 años","De 65 a 69 años","De 70 a 74 años","De 75 a 79 años","De 80 a 84 años","De 85 a 89 años","De 90 a 94 años","De 95 años y más"))
+MSE_sin_totales <- MSE %>% 
+  filter(`Mes de defunción`!="Todos los meses", Sexo!="Ambos sexos", Edad!="Todas las edades")
+```
+
+Por último, la variable `Total_suicidios` hemos dicho que es una variable numérica. Explorémosla un poco numéricamente. Para ello, saquemos estadísticos por mes.
+
+```{r, echo=FALSE}
+summary(MSE_sin_totales$Total_suicidios)
+```
+Como vemos, hay meses, edades y sexos donde no se suicida nadie, y el máximo son 45. Así mismo, de media entre todas las edades, sexos y meses se suicidan 10.63 personas.
+
+
+Una vez importado el conjunto de datos de los suicidios repartidos por comunidad autónoma y su respectiva transformación a un conjunto en formato tidy, el resultante es un dataframe con las siguientes variables:
+
+```{r, echo=FALSE}
+colnames(CSE_tidy)
+```
+La clase de estas variables es la siguiente:
+
+```{r, echo=FALSE}
+str(CSE_tidy)
+```
+Siendo la variable `Año` un factor con los años de 2014 a 2023, la variable `Territorio` un factor con las 19 Comunidades Autónomas de España, incluyendo las ciudades autónomas, y un Total nacional, la variable `Sexo` un factor con dos niveles siendo estos Hombres y Mujeres; la variable `Edad` cuenta con 15 niveles siendo estos los siguientes:
+```{r, echo=FALSE}
+levels(CSE_tidy$Edad)
+```
+Finalmente la variable `Total` muestra el número de suicidios presentados en bajo las condiciones anteriormente explicadas. Se verifica la presencia de valores ausentes en la variable `Total` con el siguiente resultado:
+```{r, echo=FALSE}
+sum(is.na(CSE_tidy$Total))
 ```
 
 
-\startlandscape
-```{r, mdpinames, echo=FALSE, results='asis'}
-mdpi_journals <- "acoustics, actuators, addictions, admsci, adolescents, aerobiology, aerospace, agriculture, agriengineering, agrochemicals, agronomy, ai, air, algorithms, allergies, alloys, analytica, analytics, anatomia, animals, antibiotics, antibodies, antioxidants, applbiosci, appliedchem, appliedmath, applmech, applmicrobiol, applnano, applsci, aquacj, architecture, arm, arthropoda, arts, asc, asi, astronomy, atmosphere, atoms, audiolres, automation, axioms, bacteria, batteries, bdcc, behavsci, beverages, biochem, bioengineering, biologics, biology, biomass, biomechanics, biomed, biomedicines, biomedinformatics, biomimetics, biomolecules, biophysica, biosensors, gases, gastroent, gastrointestdisord, gels, genealogy, genes, geographies, geohazards, geomatics, geosciences, geotechnics, geriatrics, grasses, gucdd, hazardousmatters, healthcare, hearts, hemato, hematolrep, heritage, higheredu, highthroughput, histories, horticulturae, hospitals, humanities, humans, hydrobiology, hydrogen, hydrology, hygiene, idr, ijerph, ijfs, ijgi, ijms, ijns, ijpb, ijtm, ijtpp, ime, immuno, informatics, information, infrastructures, inorganics, insects, instruments, inventions, iot, j, jal, jcdd, jcm, jcp, jcs, jcto, jdb, jeta, jfb, jfmk, jimaging, jintelligence, jlpea, jmmp, jmp, jmse, jne, jnt, jof, joitmc, jor, journalmedia, jox, jpm, jrfm, jsan, jtaer, jvd, jzbg, kidneydial, kinasesphosphatases, knowledge, land, languages, laws, life, liquids, literature, livers, logics, logistics, lubricants, lymphatics, machines, macromol, magnetism, magnetochemistry, make, marinedrugs, materials, materproc, mathematics, mca, measurements, medicina, medicines, medsci, membranes, merits, metabolites, metals, meteorology, methane, metrology, micro, microarrays, microbiolres, micromachines, microorganisms, microplastics, minerals, mining, modelling, molbank, molecules, mps, msf, mti, muscles, nanoenergyadv, nanomanufacturing, nanomaterials, ncrna, ndt, network, neuroglia, neurolint, neurosci, nitrogen, notspecified, nri, nursrep, nutraceuticals, nutrients, obesities, oceans, ohbm, onco, oncopathology, optics, oral, organics, organoids, osteology, oxygen, parasites, parasitologia, particles, pathogens, pathophysiology, pediatrrep, pharmaceuticals, pharmaceutics, pharmacoepidemiology, pharmacy, philosophies, photochem, photonics, phycology, physchem, physics, physiologia, plants, plasma, platforms, pollutants, polymers, polysaccharides, poultry, powders, preprints, proceedings, processes, prosthesis, proteomes, psf, psych, psychiatryint, psychoactives, publications, quantumrep, quaternary, qubs, radiation, reactions, receptors, recycling, regeneration, religions, remotesensing, reports, reprodmed, resources, rheumato, risks, robotics, ruminants, safety, sci, scipharm, sclerosis, seeds, sensors, separations, sexes, signals, sinusitis, skins, smartcities, sna, societies, socsci, software, soilsystems, solar, solids, spectroscj, sports, standards, stats, std, stresses, surfaces, surgeries, suschem, sustainability, symmetry, synbio, systems, targets, taxonomy, technologies, telecom, test, textiles, thalassrep, thermo, tomography, tourismhosp, toxics, toxins, transplantology, transportation, traumacare, traumas, tropicalmed, universe, urbansci, uro, vaccines, vehicles, venereology, vetsci, vibration, virtualworlds, viruses, vision, waste, water, wem, wevj, wind, women, world, youth, zoonoticdis"
 
-knitr::kable(rticles::string_to_table(mdpi_journals, 8),
-             col.names = NULL,
-             format = "latex",
-             booktabs = TRUE, 
-             caption = "MDPI journal names.",
-             longtable = TRUE)
+Una vez importada los datos de suicidios en España distribuidos por la nacionalidad de las personas, se cuenta con un dateframe que cuenta con cuatro variables siendo estas:
+
+```{r, echo=FALSE}
+print(colnames(datos_ns_tidy))
+```
+
+La clase de estas variable son:
+```{r, echo=FALSE}
+print(str(datos_ns_tidy))
+```
+
+Se tiene que la variable `Año` es un factor con niveles de 2014 a 2023, la variable `Nacionalidad` de las personas se trata como un factor de tres niveles siendo estos: Española, Extranjera y No Consta. Siendo el nivel "No consta" como personas que se han suicidado pero no se pudo comprobar la nacionalidad de la persona. 
+
+```{r, echo=FALSE}
+suicidios_barras_nacionalidad<-datos_ns_tidy%>%
+  group_by(Nacionalidad)%>%
+  summarise(Total_Suicidios=sum(Total),.groups="drop")%>%
+  mutate(Porcentaje=Total_Suicidios/sum(Total_Suicidios),
+         Etiqueta_Porcentaje=scales::percent(Porcentaje,accuracy=0.01))
+
+gr_barras_nacionalidad <- ggplot(suicidios_barras_nacionalidad,
+                                 aes(x = reorder(Nacionalidad, -Total_Suicidios),
+                                     y = Total_Suicidios,
+                                     fill = Nacionalidad)) +
+  geom_col() +
+  geom_text(
+    aes(label = Etiqueta_Porcentaje),
+    vjust = 1.5,
+    color = "white",
+    size = 4
+  ) +
+  labs(
+    title = "Proporción Total de Suicidios por Nacionalidad (2014-2023)",
+    fill = "Nacionalidad",
+    x = "Nacionalidad",
+    y = "Número Total de Suicidios"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16),
+    legend.position = "none" 
+  )
+
+print(gr_barras_nacionalidad)
 
 ```
-\finishlandscape
+
+Como se puede observar en este gráfico, la proporción de datos de suicidios de personas de las que no se cuenta la nacionalidad es sumamente bajo. Por esta razón se prescindirán de estos registros para el análisis posterior de los datos segmentados por la nacionalidad de las personas.  
+
+La variable `Sexo` cuenta con niveles Hombre y Mujer, y el número de suicidios se muestra en la variable `Total` y es de tipo numérica.
+Se tiene un total de 60 datos, donde se muestran el total de suicidios registrados por año, y la información dividida por la nacionalidad de las personas. 
 
 
 
 
-# Introduction
 
-El análisis de los suicidios constituye una tema de gran relevancia social y de salud pública, ya que permite comprender mejor los factores que influyen en este fenómeno y orientar estrategias de prevención más efectivas. En este estudio se reúne información detallada de suicidios en España clasificados según diferentes factores tales como la edad, el sexo, la nacionalidad y la comunidad autónoma.
 
-A través de la exploración de dichas variables trataremos de encontrar patrones, tendencias o posibles grupos de riesgos. Este estudio tiene el objetivo no solo de describir los datos sino también de encontrar relaciones entre ellas y así servir de ayuda para tomar medidas de prevención.
 
-# Materials and Methods
+
+
+
+
+
 
 Para nuestro caso de estudio, hemos obtenido los datos de suicidios proporcionados por el Instituto Nacional de Estadística (INE).
 En particular hemos importado los datos de suicidios de 2014 a 2023 divididos en 3 datasets.
@@ -285,12 +430,6 @@ Posteriormente, se realizará una inspección de cada una de las variables para 
 
 Por último, veremos si existe alguna relación entre alguno de nuestros factores y el número total de suicidios.
 
-## Librerías necesarias
-
-```{r}
-pacman::p_load(tidyverse,lubridate,dplyr,stringr,readr,purrr)
-```
-
 
 ## Inspección de los datos
 
@@ -302,42 +441,42 @@ guess_encoding("../data/2014_MSE.csv")
 ```
 
 ```{r MSE, echo=FALSE}
-
-# Creamos dataframe base vacío
-MSE <- data.frame(
-  "Mes de defunción" = character(),
-  Sexo = character(),
-  Edad = character(),
-  Total = numeric(),
-  stringsAsFactors = FALSE
-)
-
-colnames(MSE)[1] <- "Mes de defunción"
-
-# Función para ir concatenando los dataframes anuales
-cargar_y_añadir_MSE <- function(MSE, archivo){
-  MSE_año <- read_delim(paste0("../data/",archivo), 
-    delim = ";", escape_double = FALSE, trim_ws = TRUE, locale = locale(grouping_mark = "."))
-  MSE_año$Año <- gsub(pattern = "_[^1-9]*","", x = archivo)
-  MSE <- rbind(MSE,MSE_año)
-  return(MSE)
-}
-
-lista_archivos <- grep(x = list.files("../data"), pattern="[1-9]*_MSE.*", value= TRUE)
-for (archivo in lista_archivos){
-  MSE <- cargar_y_añadir_MSE(MSE, archivo)
-}
-
-# Convertimos los datos al tipo correcto
-MSE[colnames(MSE)!="Total"] <- as.data.frame(lapply(MSE[colnames(MSE)!="Total"],as.factor))
-
-#Renombramos variable Total para que sea más explicativa
-
-colnames(MSE)[colnames(MSE)=="Total"] <- "Total_suicidios"
-
-# Reordenamos las columnas
-MSE <- MSE %>% 
-  select(Año,"Mes de defunción", Sexo, Edad, Total_suicidios)
+ 
+ # Creamos dataframe base vacío
+ MSE <- data.frame(
+   "Mes de defunción" = character(),
+   Sexo = character(),
+   Edad = character(),
+   Total = numeric(),
+   stringsAsFactors = FALSE
+ )
+ 
+ colnames(MSE)[1] <- "Mes de defunción"
+ 
+ # Función para ir concatenando los dataframes anuales
+ cargar_y_añadir_MSE <- function(MSE, archivo){
+   MSE_año <- read_delim(paste0("../data/",archivo), 
+     delim = ";", escape_double = FALSE, trim_ws = TRUE, locale = locale(grouping_mark = "."))
+   MSE_año$Año <- gsub(pattern = "_[^1-9]*","", x = archivo)
+   MSE <- rbind(MSE,MSE_año)
+   return(MSE)
+ }
+ 
+ lista_archivos <- grep(x = list.files("../data"), pattern="[1-9]*_MSE.*", value= TRUE)
+ for (archivo in lista_archivos){
+   MSE <- cargar_y_añadir_MSE(MSE, archivo)
+ }
+ 
+ # Convertimos los datos al tipo correcto
+ MSE[colnames(MSE)!="Total"] <- as.data.frame(lapply(MSE[colnames(MSE)!="Total"],as.factor))
+ 
+ #Renombramos variable Total para que sea más explicativa
+ 
+ colnames(MSE)[colnames(MSE)=="Total"] <- "Total_suicidios"
+ 
+ # Reordenamos las columnas
+ MSE <- MSE %>% 
+   select(Año,"Mes de defunción", Sexo, Edad, Total_suicidios)
 ```
 Tras transformar nuestro dataset a formato `tidy` y haber concatenado los distintos años, vamos a analizar un poco cada una de las variables.
 
