@@ -139,6 +139,9 @@ colnames(MSE)[colnames(MSE)=="Total"] <- "Total_suicidios"
 
 MSE <- MSE %>% 
   select(Año,"Mes de defunción", Sexo, Edad, Total_suicidios)
+
+MSE_sin_totales <- MSE %>%
+  filter(`Mes de defunción`!="Todos los meses", Sexo!="Ambos sexos", Edad!="Todas las edades")
 ```
 
 ```{r CSE a Tidy, include=FALSE}
@@ -342,68 +345,34 @@ datos_ns_tidy%>%
   )
 ```
 
+El conjunto de datos que presentan los datos de suicidio, separados por mes, sexo y edad, presenta la siguiente estructura. 
 
-
-
-
-Tras transformar nuestro dataset a formato `tidy` y haber concatenado los distintos años, vamos a analizar un poco cada una de las variables.
-
-Nuestras variables en este conjunto de datos son las siguientes:
-
-
-```{r, echo = FALSE}
-str(MSE)
+```{r Estructura MSE, echo=FALSE}
+glimpse(MSE_sin_totales)
 ```
-Vemos pues que disponemos de 5 variables llamadas `Año`, `Mes de defunción`,`Sexo`,`Edad` y `Total_suicidios`. Los nombres de estas vemos que son suficientemente representativos, y todas son de tipo factor excepto la de `Total_suicidios` que es numérica. Nótese que la variable año se ha codificado como factor en lugar de fecha porque únicamente sirve como representación categórica para clasificar anualmente los datos.
 
-Vamos a inspeccionar un poco cada una de las variables.
+Se disponen de 5 variables llamadas `Año`, `Mes de defunción`,`Sexo`,`Edad` y `Total_suicidios`. Los nombres de estas variables son suficientemente representativos, y todas son de tipo factor excepto la variable numérica de `Total_suicidios`.
 
-En cuanto al `Año`, si miramos los distintos valores que puede tomar vemos que efectivamente tenemos datos de los años desde 2014 hasta 2023.
+En las variables `Mes de defunción`, `Sexo` y `Edad` se hizo la limpieza de categorías no necesarias como "Todos los meses", "Ambos sexos" y "Todas las edades"; esto para que en la visualización no se agregue ruido innecesario debido a que se tiene la capacidad de presentar esta información mediante agrupamientos de los datos.
+
+Por último, se presentan los datos de la variable `Total_suicidios`.
 
 ```{r, echo=FALSE}
-levels(MSE$Año)
-```
-Por otro lado, como cabría esperar la variable `Mes de defunción` dispone de todos los meses del año, pero vemos una particularidad, tenemos un agregado de "Todos los meses":
-
-
-En cuanto al `Sexo` disponemos de "Hombres" y "Mujeres" y, además, de nuevo tenemos un agregado de "Ambos sexos".
-
-```{r, echo=FALSE}
-levels(MSE$Sexo)
-```
-
-Para la última variable tipo factor (`Edad`) tenemos las siguientes categorías:
-
-```{r, echo=FALSE}
-levels(MSE$Edad)
+MSE_sin_totales%>%
+  summarise(
+    Mínimo=min(Total_suicidios,na.rm = TRUE),
+    Q1 = quantile(Total_suicidios, 0.25, na.rm = TRUE),
+    Mediana = median(Total_suicidios, na.rm = TRUE),
+    Media = mean(Total_suicidios, na.rm = TRUE),
+    Q3 = quantile(Total_suicidios, 0.75, na.rm = TRUE),
+    Maximo = max(Total_suicidios, na.rm = TRUE),
+    Valores_NA = sum(is.na(Total_suicidios))
+  )
 ```
 
-Como podemos observar, tenemos también un agregado de "Todas las edades".
+Como se observa, existen meses sin suicidios registrados, y el máximo registrado en un mes es de 45 personas (ocurrido en agosto de 2020). Finalmente se muestra que la media de suicidios es de 10.63. Se destaca que este conjunto no presenta valores `NA`.
 
-En vista de los datos tipo factor, realizamos una reordenación de los meses y las edades, así como una eliminación de las filas correspondientes a los registros "Ambos sexos","Todas las edades" y "Todos los meses".
 
-```{r, echo=FALSE}
-library(tidyverse)
-MSE$`Mes de defunción` <- factor(MSE$`Mes de defunción`, levels=c("enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre", "Todos los meses"))
-
-MSE$Edad <- factor(MSE$Edad, levels=c("Todas las edades","Menores de 15 años","De 15 a 29 años","De 30 a 39 años","De 40 a 44 años","De 45 a 49 años","De 50 a 54 años","De 55 a 59 años","De 60 a 64 años","De 65 a 69 años","De 70 a 74 años","De 75 a 79 años","De 80 a 84 años","De 85 a 89 años","De 90 a 94 años","De 95 años y más"))
-MSE_sin_totales <- MSE %>% 
-  filter(`Mes de defunción`!="Todos los meses", Sexo!="Ambos sexos", Edad!="Todas las edades")
-```
-
-Por último, la variable `Total_suicidios` hemos dicho que es una variable numérica. Explorémosla un poco numéricamente. Para ello, saquemos estadísticos por mes.
-
-```{r, echo=FALSE}
-summary(MSE_sin_totales$Total_suicidios)
-```
-
-Como vemos, hay meses, edades y sexos donde no se suicida nadie, y el máximo son 45. Así mismo, de media entre todas las edades, sexos y meses se suicidan 10.63 personas.
-
-Además, este conjunto de datos no presentan datos faltantes:
-
-```{r, echo = FALSE}
-sum(is.na(MSE_sin_totales))
-```
 
 ## Tidy dataset CA, Sexo y Edad
 
