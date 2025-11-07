@@ -824,13 +824,14 @@ Por último, veremos si existe alguna relación entre alguno de nuestros factore
 
 ## Graficos Calendario
 
+Una de las primeras preguntas que surgen a la hora de analizar nuestro caso de estudio es qué evolución ha tenido el número de suicidios a lo largo de los años. Para ello, podemos utilizar cualquiera de los 3 datasets que hemos comentado anteriormente, ya que todos ellos contienen ímplicitamente la información de los suicidios totales en cada año.
 ```{r grafico-defunciones a lo largo del tiempo}
 library(ggplot2)
 MSE_evolucion <-MSE %>% 
   filter(`Mes de defunción`=="Todos los meses", Sexo=="Ambos sexos", Edad=="Todas las edades")
 
 MSE_evolucion %>% 
-  ggplot(aes(x=Año, y=Total_suicidios)) + geom_point() + geom_line(group=1)
+  ggplot(aes(x=Año, y=Total_suicidios)) + geom_point() + geom_line(group=1)+geom_vline(xintercept = "2020", linetype = "dashed", color = "red")
 ```
 ```{r}
 #Quitamos totales
