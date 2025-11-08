@@ -220,20 +220,6 @@ for (CSE in archivos){
 CSE_tidy <- CSE_tidy %>% 
   select(Año,Territorio, Sexo, Edad, Total)
 
- # Para graficar la pirámide de población
- CSE_graf <- CSE_tidy %>%
-   # Para que un sexo se dibuje “hacia la izquierda” y otro hacia la derecha, una de las poblaciones debe ser negativa:
-   mutate(Total = ifelse(Sexo == "Hombres", -Total, Total)) %>%
-   filter(Sexo != "Ambos") %>%
-   filter(Edad != "Todas") %>%
-   filter(Territorio == "Nacional") %>%
-   select(Año,Sexo,Edad,Total)
- # Para graficar el mapa
- CSE_map <- CSE_tidy %>%
-   filter(Sexo == "Ambos") %>%
-   filter(Edad == "Todas") %>%
-   filter(Territorio != "Nacional") %>%
-   select(Año,Territorio,Total)
  }
 ```
 
@@ -312,8 +298,6 @@ df_tidy_poblacion_NS <- poblacion_NS %>%
   select(Año,Nacionalidad,Sexo,  Poblacion)
 ```
 
- **Agregar explicación de trabajo que se hizo para importación de población**
- 
   Además de todo esto, resulta evidente pensar que los datos de suicidios recogidos en función de los respectivos grupos ya comentados son absolutos, y pueden no tener una interpretación correcta si comparamos grupos de distinto tamaño.
   
   Es por ello que también se han importado datos de poblaciones en España para analizar preguntas de interés que han surgido del estudio de nuestros datos. En particular, se han importado 2 datasets, uno con un desglose de poblaciones por comunidades autónomas en el periodo de estudio, y otro con un desglose por Nacionalidad y Sexo.
@@ -396,7 +380,6 @@ CSE_solo_comunidades <- CSE_tidy_con_poblacion %>%
 ```
 
 
-
 ## Inspección de los Datos
 
 Con los datos consolidados, se realiza la inspección de las variables con las que se cuenta para el análisis, y se identifican diversas características presentes en cada uno de los datasets.
@@ -449,6 +432,7 @@ print(gr_barras_nacionalidad)
 Como se observa en el gráfico, la proporción de datos de esta categoría es prácticamente nula, con apenas un 0.02%. Por esta razón, para el análisis de los datos de suicidio segmentados por `Nacionalidad` esta categoría no se toma en consideración.
 Finalmente para este dataset, la variable `Total` cuenta con un total de 60 datos, donde se muestran el total de suicidios registrados por año, y la información dividida por la nacionalidad de las personas.
 A continuación se presenta un resumen de los datos presentes en esta variable.
+
 ```{r, echo=FALSE}
 datos_ns_tidy%>%
   filter(Nacionalidad!="No consta")%>%
@@ -555,7 +539,6 @@ box_meses<-MSE_sin_totales%>%
   ggplot(aes(x=`Mes de defunción`, y=Total_sum))+ geom_boxplot()+
   labs(x="Mes de Defunción",y="Total de Suicidios")+
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-  
 
 print(box_meses)
 ```
@@ -574,6 +557,8 @@ MSE_sin_totales%>%
 
 Se destaca el mes de diciembre que presenta dos valores atípicos, que tras el análisis de los datos de este mes, el valor extremo superior corresponde a diciembre de 2021 (transitado por el contexto de la pandemia) donde se presentaron 349 suicidios. Y por su parte el valor extremo inferior corresponde a un año prepandémico, correspondiente a 2017 con 241 suicidios registrados.
 
+Se considera importante analizar los datos separando el número de suicidios por el sexo de la persona, para de esta forma poder interpretar si los datos de hombres y mujeres presentan variaciones en el comportamiento, que pueda dar paso a conclusiones de esta problemática.
+El siguiente gráfico presenta la evolución anual del número de suicidios desglosado por sexo.
 ```{r suicidios por sexo, include=FALSE}
 evo_sexo<-MSE_sin_totales%>%
   group_by(Año,Sexo)%>%
@@ -594,6 +579,10 @@ gra_anual_sexo<-ggplot(evo_sexo,aes(x=Año,y=Total_Anual,fill = Sexo))+
 print(gra_anual_sexo)
 ```
 
+Desde el análisis visual del gráfico se puede interpretar que existe una profunda brecha de género en la mortalidad por suicidio. Durante todos los años considerados en este estudio, se presentaron más suicidios en hombres que en mujeres. Estos resultados se mantienen en el tiempo, pero también se observa que tanto en hombres como en mujeres, post pandemia, los registros de suicidios se incrementaron.
+
+Para complementar esta evidencia visual, se realiza el análisis de estas variables para identificar que no es cuestión de aleatoriedad los resultados obtenidos. Se realiza la prueba no paramétrica del test de Wilcoxon para el estudio de estas variables, debido a que no se comparan grupos independientes, sino que se comparan datos pareados de hombres y mujeres para cada año.
+
 ```{r test wilcox Hombre-Mujer, echo=FALSE}
 total_hombres<-evo_sexo%>%
   filter(Sexo=="Hombres")%>%
@@ -609,7 +598,11 @@ hommuje_Wilcox<-wilcox.test(x=total_hombres,y = total_mujeres,
 print(hommuje_Wilcox)
 ```
 
-**Agregar explicación gráficos por sexo y test realizado**
+Observando el valor de `p` obtenido con esta prueba, se rechaza la hipótesis nula, que indica que no existe diferencia estadística entre el número de suicidios entre hombres y mujeres mediante el análisis de la mediana de las diferencias.
+Este análisis confirma que la diferencia observada no es causal, la disparidad entre la mortalidad por suicidio en España entre hombres y mujeres es un fenómeno estadísticamente significativo y de gran magnitud. Mediante este tipo de hallazgos, se destaca que las estrategias de prevención de estos sucesos se deben direccionar y adquirir un enfoque de género diferenciado. 
+ 
+Como continuación del análisis, se estudian los datos de suicidio registrados bajo la segmentación de `Nacionalidad`. El número de suicidios ocurridos en españoles es ampliamente superior a los extranjeros, pero este análisis es trivial y poco informativo debido a que la población española residente en España es mucho mayor que la extranjera.
+Para obtener información de estos datos, se analiza el número de suicidios ocurridos por cada cien mil habitantes, haciendo uso de los datos poblaciones de españoles y extranjeros registrados territorio español durante el 2014 al 2023. Obteniendo lo siguiente.
 
 ```{r, echo=FALSE}
 df_tidy_poblacion_NS <- datos_ns_tidy %>% filter(Nacionalidad!="No consta") %>% inner_join(df_tidy_poblacion_NS,by=c("Año","Nacionalidad","Sexo"))
@@ -639,7 +632,13 @@ ggplot(df_tidy_poblacion_NS, aes(x = Año, y = Tasa_suicidios_100k, color = Naci
   theme(legend.position = "bottom")
 ```
 
-**Agregar explicación de resultados de tasa por nacionalidad**
+Este gráfico contradice el análisis si toma únicamente el número absoluto de suicidios registrados, evidenciando una mayor paridad en las tasas de suicidio por cada 100.000 habitantes entre españoles y extranjeros.
+Se evidencia que la población española tenía una tasa de suicidio superior a la extranjera al inicio del periodo de estudio (2014 a 2016), sin embargo la tasa en extranjeros fue incrementando con el tiempo, alcanzando un pico en 2019 y sobrepasando a la tasa española.
+La tasa de suicidio en españoles presentó un comportamiento general más suave, con incrementos tras la pandemia, mientras que la extranjera presentó picos y valles más pronunciados.
+Se concluye con este gráfico que la población extranjera está lejos de ser un grupo de bajo riesgo ante la problemática de los suicidios, con una alta volatilidad, y que su pico máximo se alcanzara en 2019 (pre-pandemia) rompe con la narrativa de un impacto pandémico unificado para todos los grupos, y sugiere que existen otros factores que afectaron a esta población antes de la crisis sanitaria.
+
+Con los resultados de los análisis anteriores se han supuesto conclusiones como el aumento en el número de suicidios post pandemia, también que la gran mayoría de estos suicidios se presentan en hombres y que la población extranjera en España presenta variaciones a lo largo del tiempo en la tasa de suicidio por cada cien mil habitantes.
+Sin embargo no se considera si existen grupos etarios que presentan mayor frecuencia en el número de suicidios. Mediante el siguiente mapa de calor facetado, se visualiza si existen rangos de edad con una mayor incidencia y si los resultados entre hombres y mujeres se asemejan.
 
 ```{r heatmap edades, echo=FALSE, out.width="90%"}
 niveles_edad <- c("<15 ", "15-29 ", "30-39 ", "40-44 ", "45-49 ", 
@@ -669,10 +668,14 @@ heatmp_edades<-ggplot(CSE_agg,
 print(heatmp_edades)
 ```
 
+La primera observación que se rescata de este gráfico, es la drástica diferencia entre los dos paneles, siendo el de los hombres el que presenta una mayor incidencia (con más rojos, y más intensos) mientras que el de las mujeres presenta valores mucho menores.
+También se identifica que la incidencia de los suicidios no se distribuye uniformente, destacando "puntos calientes" en la mediana edad. Esto se visualiza ya que a partir de los 30 años hasta los 50, es donde se pinta una mayor incidencia de suicidios, principalmente en hombres. Aunque este patrón también ocurre en mujeres pero con una menor magnitud.
+Visualizando el gráfico de izquierda a derecha, se vuelve a encontrar el impacto del COVID-19 en la incidencia de suicidios, ya que se visualizan los puntos de mayor intensidad, en ambos paneles, al lado derecho tras el 2020.
 
-**Agregar explicación resultados de heatmap por edad**
+Con este mapa de calor se sintetiza, que la narrativa de suicidio en España durante el periodo de 2014 a 2023 se define principalmente en hombres de la mediana edad, y que el impacto de la pandemia no creó un problema nuevo, sino que intensificó el riesgo en estos grupos.  
 
-```{r mapas de suicidios por CA, echo=FALSE}
+
+```{r mapas de suicidios por CA, echo=FALSE, out.width="90%"}
 ccaa <- esp_get_ccaa(year = "2021") %>% st_as_sf()
 
 ccaa <- ccaa %>%
@@ -721,7 +724,7 @@ print(mapas_totals)
 
 **Agregar explicación de Total de número de suicidios por CA**
 
-```{r mapas suicidio por CA cada 100k, echo=FALSE}
+```{r mapas suicidio por CA cada 100k, echo=FALSE, out.width="90%"}
 ccaa <- esp_get_ccaa(year = "2021") %>% st_as_sf()
 
 ccaa <- ccaa %>%
@@ -789,7 +792,7 @@ CSE_solo_comunidades%>%
   summarise(correlacion=cor(Total, Poblacion))
 ```
 
-```{r, echo=FALSE, warning=FALSE,message=FALSE}
+```{r, echo=FALSE, warning=FALSE,message=FALSE, out.width="85%"}
 CSE_tidy_con_poblacion %>% 
   group_by(Año, Territorio) %>% 
   summarise(
