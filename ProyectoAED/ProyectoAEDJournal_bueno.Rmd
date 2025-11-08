@@ -614,6 +614,7 @@ df_tidy_poblacion_NS <- df_tidy_poblacion_NS %>%
     Poblacion_total = sum(Poblacion, na.rm = TRUE),
     .groups = "drop"
   ) %>%
+  mutate(Tasa_suicidios=Suicidios_total/Poblacion_total)%>%
   mutate(Tasa_suicidios_100k = (Suicidios_total / Poblacion_total)*100000)
 ```
 
@@ -713,7 +714,7 @@ mapas_totals<-CSE_map_F_totals%>%
     high = "black",
     trans="sqrt",
     na.value="grey95",
-    name="Total Suicidios"
+    name="Total"
   )+
   theme_void()+
   labs(
@@ -769,7 +770,7 @@ mapas_tasas <- CSE_map_F_tasas %>%
     high = "black",
     trans="sqrt",
     na.value="grey95",
-    name="Tasa por 100.000 habitantes"
+    name="Tasa"
   )+
   theme_void()+
   labs(
@@ -783,6 +784,9 @@ mapas_tasas <- CSE_map_F_tasas %>%
 print(mapas_tasas)
 ```
 ```{r eval=FALSE, include=FALSE}
+CSE_con_tasas <- CSE_solo_comunidades %>% 
+  mutate(Tasa_Suicidios=Total/Poblacion) 
+
 CSE_con_tasas %>% 
   arrange(desc(Tasa_Suicidios))
 ```
@@ -837,16 +841,16 @@ Efectivamente se observa que existe una relación fuertemente positiva entre pob
 
 
 ```{r}
-CSE_solo_comunidades %>% 
-  ggplot(aes(x=Total))+
-  geom_histogram()
+# CSE_solo_comunidades %>% 
+#   ggplot(aes(x=Total))+
+#   geom_histogram()
 
-CSE_con_tasas <- CSE_solo_comunidades %>% 
-  mutate(Tasa_Suicidios=Total/Poblacion) 
+# CSE_con_tasas <- CSE_solo_comunidades %>% 
+#   mutate(Tasa_Suicidios=Total/Poblacion) 
 
-CSE_con_tasas %>% 
-  ggplot(aes(x=Tasa_Suicidios))+
-  geom_histogram()
+# CSE_con_tasas %>% 
+#   ggplot(aes(x=Tasa_Suicidios))+
+#   geom_histogram()
 ```
 ```{r}
 reglasigma <- function(x){
@@ -867,15 +871,15 @@ reglaboxplot <- function(x) {
 ```
 
 ```{r Outliers}
-CSE_con_tasas[reglaboxplot(CSE_con_tasas$Tasa_Suicidios),]
-CSE_con_tasas[reglasigma(CSE_con_tasas$Tasa_Suicidios),]
-
-df_tidy_poblacion_NS[reglaboxplot(df_tidy_poblacion_NS$Tasa_suicidios),]
-
-CSE_poblacion_sexo_tasas <- CSE_poblacion_sexo %>% 
-  mutate(Tasa_suicidios=Total/Poblacion)
-
-CSE_poblacion_sexo_tasas[reglaboxplot(CSE_poblacion_sexo_tasas$Tasa_suicidios),]
+# CSE_con_tasas[reglaboxplot(CSE_con_tasas$Tasa_Suicidios),]
+# CSE_con_tasas[reglasigma(CSE_con_tasas$Tasa_Suicidios),]
+# 
+# df_tidy_poblacion_NS[reglaboxplot(df_tidy_poblacion_NS$Tasa_suicidios),]
+# 
+# CSE_poblacion_sexo_tasas <- CSE_poblacion_sexo %>% 
+#   mutate(Tasa_suicidios=Total/Poblacion)
+# 
+# CSE_poblacion_sexo_tasas[reglaboxplot(CSE_poblacion_sexo_tasas$Tasa_suicidios),]
 ```
 
 ## Subsection Heading Here
