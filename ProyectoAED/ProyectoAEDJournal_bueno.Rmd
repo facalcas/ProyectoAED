@@ -220,20 +220,6 @@ for (CSE in archivos){
 CSE_tidy <- CSE_tidy %>% 
   select(Año,Territorio, Sexo, Edad, Total)
 
- # Para graficar la pirámide de población
- CSE_graf <- CSE_tidy %>%
-   # Para que un sexo se dibuje “hacia la izquierda” y otro hacia la derecha, una de las poblaciones debe ser negativa:
-   mutate(Total = ifelse(Sexo == "Hombres", -Total, Total)) %>%
-   filter(Sexo != "Ambos") %>%
-   filter(Edad != "Todas") %>%
-   filter(Territorio == "Nacional") %>%
-   select(Año,Sexo,Edad,Total)
- # Para graficar el mapa
- CSE_map <- CSE_tidy %>%
-   filter(Sexo == "Ambos") %>%
-   filter(Edad == "Todas") %>%
-   filter(Territorio != "Nacional") %>%
-   select(Año,Territorio,Total)
  }
 ```
 
@@ -312,8 +298,6 @@ df_tidy_poblacion_NS <- poblacion_NS %>%
   select(Año,Nacionalidad,Sexo,  Poblacion)
 ```
 
- **Agregar explicación de trabajo que se hizo para importación de población**
- 
   Además de todo esto, resulta evidente pensar que los datos de suicidios recogidos en función de los respectivos grupos ya comentados son absolutos, y pueden no tener una interpretación correcta si comparamos grupos de distinto tamaño.
   
   Es por ello que también se han importado datos de poblaciones en España para analizar preguntas de interés que han surgido del estudio de nuestros datos. En particular, se han importado 2 datasets, uno con un desglose de poblaciones por comunidades autónomas en el periodo de estudio, y otro con un desglose por Nacionalidad y Sexo.
@@ -396,7 +380,6 @@ CSE_solo_comunidades <- CSE_tidy_con_poblacion %>%
 ```
 
 
-
 ## Inspección de los Datos
 
 Con los datos consolidados, se realiza la inspección de las variables con las que se cuenta para el análisis, y se identifican diversas características presentes en cada uno de los datasets.
@@ -449,6 +432,7 @@ print(gr_barras_nacionalidad)
 Como se observa en el gráfico, la proporción de datos de esta categoría es prácticamente nula, con apenas un 0.02%. Por esta razón, para el análisis de los datos de suicidio segmentados por `Nacionalidad` esta categoría no se toma en consideración.
 Finalmente para este dataset, la variable `Total` cuenta con un total de 60 datos, donde se muestran el total de suicidios registrados por año, y la información dividida por la nacionalidad de las personas.
 A continuación se presenta un resumen de los datos presentes en esta variable.
+
 ```{r, echo=FALSE}
 datos_ns_tidy%>%
   filter(Nacionalidad!="No consta")%>%
@@ -555,7 +539,6 @@ box_meses<-MSE_sin_totales%>%
   ggplot(aes(x=`Mes de defunción`, y=Total_sum))+ geom_boxplot()+
   labs(x="Mes de Defunción",y="Total de Suicidios")+
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-  
 
 print(box_meses)
 ```
@@ -672,7 +655,7 @@ print(heatmp_edades)
 
 **Agregar explicación resultados de heatmap por edad**
 
-```{r mapas de suicidios por CA, echo=FALSE}
+```{r mapas de suicidios por CA, echo=FALSE, out.width="90%"}
 ccaa <- esp_get_ccaa(year = "2021") %>% st_as_sf()
 
 ccaa <- ccaa %>%
@@ -721,7 +704,7 @@ print(mapas_totals)
 
 **Agregar explicación de Total de número de suicidios por CA**
 
-```{r mapas suicidio por CA cada 100k, echo=FALSE}
+```{r mapas suicidio por CA cada 100k, echo=FALSE, out.width="90%"}
 ccaa <- esp_get_ccaa(year = "2021") %>% st_as_sf()
 
 ccaa <- ccaa %>%
@@ -789,7 +772,7 @@ CSE_solo_comunidades%>%
   summarise(correlacion=cor(Total, Poblacion))
 ```
 
-```{r, echo=FALSE, warning=FALSE,message=FALSE}
+```{r, echo=FALSE, warning=FALSE,message=FALSE, out.width="85%"}
 CSE_tidy_con_poblacion %>% 
   group_by(Año, Territorio) %>% 
   summarise(
