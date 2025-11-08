@@ -437,24 +437,8 @@ CSE_tidy%>%
 
 # Resultados
 
-Una de las primeras preguntas que surgen a la hora de analizar nuestro caso de estudio, es cómo ha sido la evolución del número de suicidios a lo largo de los años en España. Para ello, se visualiza en un gráfico de líneas, como se ha comportado en el periodo de 2014 a 2023.
-
-```{r grafico-defunciones a lo largo del tiempo, echo=FALSE}
-suicidios_por_año<-datos_ns_tidy%>%
-  group_by(Año)%>%
-  summarise(Total_Suicidios=sum(Total))
-
-gr_por_año<-ggplot(suicidios_por_año, aes(x=Año, y=Total_Suicidios, group=1)) +
-  geom_line(color="black") +
-  geom_point(color="black") +
-  labs(title = "Evolución del Total de Suicidios en España (2014-2023)",
-       y = "Número de Suicidios",
-       x = "Año") +
-  theme_minimal()
-
-print(gr_por_año)
-```
-Con este gráfico se visualiza un crecimiento en el número de suicidios registrados en España en los últimos años del periodo analizado, además se quiere identificar específicamente el comportamiento tras el inicio de la pandemia por el COVID-19. Con el siguiente gráfico se añade una capa para complementar esta hipótesis con los resultados obtenidos.
+Una de las primeras preguntas que surgen a la hora de analizar este caso de estudio, es cómo ha sido la evolución del número de suicidios a lo largo de los años en España. El análisis de esta tendencia es clave para identificar patrones y el posible impacto de eventos puntuales en el número de casos registrados.
+Dado que uno de los objetivos es identificar específicamente el comportamiento de los datos en los últimos años, es difícil de obviar la pandemia del COVID-19 como un posible detonante en el aumento de casos que se han registrado, por lo tanto se destaca con una línea este suceso para marcar este hecho, en el siguiente gráfico ilustra esta evolución. 
 
 ```{r grafico lineas 2020, echo=FALSE, message=FALSE, warning=FALSE}
 MSE_evolucion <-MSE %>% 
@@ -473,6 +457,12 @@ MSE_evolucion %>%
   theme_minimal()
 ```
 
+Con este gráfico se visualiza un crecimiento notable en el número de suicidios registrados en España concentrado principalmente en los últimos años del periodo analizado.
+Se pueden identificar dos fases, el periodo prepandémico (2014 a 2018), los datos registraron una tendencia variable, alcanzando el punto más bajo en el 2018. A partir del 2019 se observa un cambio, coincidiendo con el inicio de la pandemia, se visualiza un incremento pronunciado en el número de suicidios que se extiende por tres años culminando en 2022, año en el que se registró el máximo de suicidios. Finalmente, en 2023 se muestra un ligero descenso con respecto al año anterior, pero igualmente con un dato superior a los alcanzados en la fase prepandémica.
+Estos hallazgos sugieren un posible impacto de la pandemia y sus consecuencias sociosanitarias en la mortalidad por suicidio en España.
+
+Como continuación del análisis de los suicidios registrados en el periodo 2014-2023, se investiga sobre una posible estacionalidad en la ocurrencia de estos hechos. Para indagar en este tema se agrupan los suicidios por el mes en el que ocurrió el hecho, y se estudia para todos los años. El siguiente gráfico muestra un conjunto de boxplots que resumen la distribución de los suicidios para cada mes, permitiendo identificar la mediana de suicidios por mes, así como su variabilidad y posible presencia de valores extremos en algún mes concreto.
+
 ```{r box por meses MSE, echo=FALSE, message=FALSE, warning=FALSE}
 box_meses<-MSE_sin_totales%>%
   group_by(`Mes de defunción`,Año)%>%
@@ -485,7 +475,19 @@ box_meses<-MSE_sin_totales%>%
 print(box_meses)
 ```
 
-Explicación de Boxplot...
+A partir de este gráfico, se puede refutar una posible idea de que los suicidios ocurren aleatoriamente durante el año, debido a que se observa un patrón estacional en los datos.
+Contrario a lo que se puede intuir, no son los meses de invierno los que mayores tasas de suicidio presentan, los datos estudiados muestran una mayor incidencia en los meses de verano. Con medianas mayores para los meses de mayo hasta agosto, y progresivamente tras el verano se presenta una disminución.
+También se destacan las cajas más compacta en invierno, significando que además de tener una incidencia menor, la variabilidad a lo largo de los años es baja en estos meses.  
+
+```{r, include=FALSE}
+MSE_sin_totales%>%
+  group_by(`Mes de defunción`,Año)%>%
+  filter(`Mes de defunción`=="diciembre")%>%
+  summarise(total=sum(Total_suicidios))%>%
+  arrange(desc(total))
+```
+
+Se destaca el mes de diciembre que presenta dos valores atípicos, que tras el análisis de los datos de este mes, el valor extremo superior corresponde a diciembre de 2021 (transitado por el contexto de la pandemia) donde se presentaron 349 suicidios. Y por su parte el valor extremo inferior corresponde a un año prepandémico, correspondiente a 2017 con 241 suicidios registrados.
 
 ```{r suicidios por sexo, include=FALSE}
 evo_sexo<-MSE_sin_totales%>%
