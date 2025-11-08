@@ -92,7 +92,7 @@ El punto de partida consistió en múltiples archivos .csv (uno para cada año d
 Las librerías utilizadas para este análisis se presentan acontinuación.
 ```{r, echo=TRUE}
 pacman::p_load(tidyverse,lubridate,dplyr,stringr,readr,purrr,
-               ggplot2,mapSpain,sf,scales)
+               ggplot2,mapSpain,sf,scales,readxl)
 ```
 El primer paso fue verificar la codificación de los conjuntos de datos, con el resultado que los conjuntos de Nacionalidad y Sexo y el conjunto de Comunidad Autónoma, Sexo y Edad comparten codificación, siendo esta la `ISO-8859-1`. Mientras que el conjunto de datos de Mes, Sexo y Edad presenta una codificación de `UTF-8`.
 
@@ -288,6 +288,37 @@ datos_ns_tidy <- map_dfr(lista_archivos_ns, procesar_archivo_ns)
 Se destacan tareas de transformación y limpieza que se realizaron en los conjuntos de datos seleccionados como la creación de una variable `Año` para cada uno de los conjuntos, debido a que en los ficheros originales descargados desde la página del INE no se contaba con esta variable. Se implementó una función que mediante el uso de expresiones regulares extraía el año (proveniente del nombre del fichero .csv), y se crea la variable `Año` en base a esta extracción. También se destaca la gestión de la respectiva codificación del conjunto de datos para evitar problemas al importar los conjuntos además de la corrección en los tipos de datos, referentes a la variables numéricas y categóricas que cada dataset presenta.
 Una vez los ficheros se han tratado, se procede a su concatenación para la creación de los tres respectivos conjuntos de datos que serán utilizados para el análisis en el proyecto.
 
+```{r import poblacion nacionalidad 1, include=FALSE}
+poblacion_NS <- read_excel("../data/poblacion_ASN.xlsx", skip=6, n_max = 9)
+```
+
+```{r importacion poblacion nacionalidad 2, include=FALSE}
+df_tidy_poblacion_NS <- poblacion_NS %>%
+  rename(cat = 1) %>%
+  
+  mutate(
+    Nacionalidad = if_else(cat %in% c("Española", "Extranjera"), cat, NA_character_),
+    edad         = if_else(cat == "Todas las edades", cat, NA_character_),
+    Sexo         = if_else(cat %in% c("Hombres", "Mujeres"), cat, NA_character_)
+  ) %>%
+  
+  fill(Nacionalidad, edad, Sexo) %>%
+  
+  filter(!(cat %in% c("Española", "Extranjera", "Todas las edades"))) %>%
+  
+  pivot_longer(
+    cols = -c(cat, Nacionalidad, edad, Sexo),
+    names_to = "fecha",
+    values_to = "Poblacion"
+  ) %>%
+  
+  mutate(
+    Año = as.factor(str_extract(fecha, "\\d{4}") |> as.integer())
+  ) %>%
+  select(Año,Nacionalidad,Sexo,  Poblacion)
+```
+
+ **Agregar explicación de trabajo que se hizo para importación de población**
 
 ## Inspección de los Datos
 
@@ -467,49 +498,73 @@ MSE_sin_totales%>%
 Se destaca el mes de diciembre que presenta dos valores atípicos, que tras el análisis de los datos de este mes, el valor extremo superior corresponde a diciembre de 2021 (transitado por el contexto de la pandemia) donde se presentaron 349 suicidios. Y por su parte el valor extremo inferior corresponde a un año prepandémico, correspondiente a 2017 con 241 suicidios registrados.
 
 
-```{r barras sexo/mes, echo=FALSE, message=FALSE, warning=FALSE}
-for (año in unique(MSE$Año)) {
-  df_year <- MSE_sin_totales %>% 
-    filter(Año == año) %>%
-    group_by(`Mes de defunción`, Sexo) %>% 
-    summarise(Total_sum = sum(Total_suicidios), .groups = "drop")
-  
-  p <- ggplot(df_year, aes(x = `Mes de defunción`, y=Total_sum, fill=Sexo)) +
-        geom_bar(stat="identity", aes(fill=Sexo), position="dodge") +
-        labs(x="Mes de Defunción",y="Total de Suicidios") +
-        ggtitle(paste("Año:", año))+
-        scale_fill_manual(values = c("Hombres" = "skyblue", "Mujeres" = "pink")) +
-        theme(axis.text.x = element_text(angle = 45, hjust = 1))
-        
-
-  print(p)
-}
+```{r suicidios por sexo, include=FALSE}
+evo_sexo<-MSE_sin_totales%>%
+  group_by(Año,Sexo)%>%
+  summarise(Total_Anual=sum(Total_suicidios),.groups = "drop")
+```
+```{r evolucion por sexo, echo=FALSE, out.width="85%"}
+gra_anual_sexo<-ggplot(evo_sexo,aes(x=Año,y=Total_Anual,fill = Sexo))+
+  geom_col(position = "dodge")+
+  scale_fill_manual(values = c("Hombres"="skyblue","Mujeres"="pink"))+
+  labs(
+    title = "Evolución del Total de Suicidios por Sexo (2014-2023)",
+    y="Total de Suicidios",
+    x="Año"
+  )+
+  theme_minimal()+
+  theme(legend.position = "bottom")
+print(gra_anual_sexo)
 ```
 
-Explicación gráficos barras sexo/mes...
+```{r test wilcox Hombre-Mujer, echo=FALSE}
+total_hombres<-evo_sexo%>%
+  filter(Sexo=="Hombres")%>%
+  pull(Total_Anual)
 
-```{r graficos nacionalidad_suicidios,echo=FALSE, message=FALSE, warning=FALSE}
-suicidios_por_nacionalidad<-datos_ns_tidy%>%
-  group_by(Año,Nacionalidad)%>%
-  summarise(Total_Suicidios=sum(Total))%>%
-  filter(Nacionalidad!="No consta")
+total_mujeres<-evo_sexo%>%
+  filter(Sexo=="Mujeres")%>%
+  pull(Total_Anual)
 
-for (año in 2014:2023) {
-  df_year <- suicidios_por_nacionalidad %>%
-    filter(Año == año)
-  
-  p <- ggplot(df_year, aes(x = Nacionalidad, y = Total_Suicidios, fill = Nacionalidad)) +
-    geom_col() +
-    labs(title = paste("Suicidios en España por Nacionalidad - Año", año),
-         x = "Nacionalidad",
-         y = "Número de Suicidios") +
-    theme_minimal() +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1),
-          legend.position = "none")
-  
-  print(p)
-}
+hommuje_Wilcox<-wilcox.test(x=total_hombres,y = total_mujeres,
+                           paired = TRUE,
+                           alternative = "greater")
+print(hommuje_Wilcox)
 ```
+
+**Agregar explicación gráficos por sexo y test realizado**
+
+```{r, echo=FALSE}
+df_tidy_poblacion_NS <- datos_ns_tidy %>% filter(Nacionalidad!="No consta") %>% inner_join(df_tidy_poblacion_NS,by=c("Año","Nacionalidad","Sexo"))
+
+df_tidy_poblacion_NS <- df_tidy_poblacion_NS %>%
+  group_by(Año, Nacionalidad) %>%
+  summarise(
+    Suicidios_total = sum(Total, na.rm = TRUE),
+    Poblacion_total = sum(Poblacion, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(Tasa_suicidios_100k = (Suicidios_total / Poblacion_total)*100000)
+```
+
+```{r grafico tasa suicidio por nacionalidad, echo=FALSE, out.width="85%"}
+ggplot(df_tidy_poblacion_NS, aes(x = Año, y = Tasa_suicidios_100k, color = Nacionalidad, group = Nacionalidad)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size=2.5) +
+  labs(
+    title = "Evolución de Tasa de Suicidio por Nacionalidad",
+    subtitle = "Suicidios por cada 100.000 habitantes",
+    x = "Año",
+    y = "Tasa de Suicidio (por cada 100.000 hab.",
+    color = "Nacionalidad"
+  ) +
+  theme_minimal()+
+  theme(legend.position = "bottom")
+```
+
+**Agregar explicación de resultados de tasa por nacionalidad**
+
+
 
 ```{r, echo=FALSE}
 #Cargamos librerías para graficar
@@ -600,63 +655,63 @@ for (año in 2014:2023) {
 
 
 ```{r, echo=FALSE}
-library(readxl)
-poblacion_NS <- read_excel("../data/poblacion_ASN.xlsx", skip=6, n_max = 9)
-View(poblacion_NS)
+# library(readxl)
+# poblacion_NS <- read_excel("../data/poblacion_ASN.xlsx", skip=6, n_max = 9)
+# View(poblacion_NS)
 ```
 
 ```{r poblaciones_ns, echo=FALSE}
-library(readxl)
-library(tidyverse)
-
-
-df_tidy_poblacion_NS <- poblacion_NS %>%
-  rename(cat = 1) %>%
-  
-  mutate(
-    Nacionalidad = if_else(cat %in% c("Española", "Extranjera"), cat, NA_character_),
-    edad         = if_else(cat == "Todas las edades", cat, NA_character_),
-    Sexo         = if_else(cat %in% c("Hombres", "Mujeres"), cat, NA_character_)
-  ) %>%
-  
-  fill(Nacionalidad, edad, Sexo) %>%
-  
-  filter(!(cat %in% c("Española", "Extranjera", "Todas las edades"))) %>%
-  
-  pivot_longer(
-    cols = -c(cat, Nacionalidad, edad, Sexo),
-    names_to = "fecha",
-    values_to = "Poblacion"
-  ) %>%
-  
-  mutate(
-    Año = as.factor(str_extract(fecha, "\\d{4}") |> as.integer())
-  ) %>%
-  select(Año,Nacionalidad,Sexo,  Poblacion)
-
-
-df_tidy_poblacion_NS <- datos_ns_tidy %>% filter(Nacionalidad!="No consta") %>% inner_join(df_tidy_poblacion_NS,by=c("Año","Nacionalidad","Sexo"))
-
-df_tidy_poblacion_NS <- df_tidy_poblacion_NS %>%
-  group_by(Año, Nacionalidad) %>%
-  summarise(
-    Suicidios_total = sum(Total, na.rm = TRUE),
-    Poblacion_total = sum(Poblacion, na.rm = TRUE),
-    .groups = "drop"
-  ) %>%
-  mutate(Tasa_suicidios = Suicidios_total / Poblacion_total)
-
-
-ggplot(df_tidy_poblacion_NS, aes(x = Año, y = Tasa_suicidios, color = Nacionalidad, group = Nacionalidad)) +
-  geom_line(linewidth = 1.2) +
-  geom_point() +
-  labs(
-    title = "Tasa de suicidios por nacionalidad (total hombres + mujeres)",
-    x = "Año",
-    y = "Tasa de suicidios",
-    color = "Nacionalidad"
-  ) +
-  theme_minimal()
+# library(readxl)
+# library(tidyverse)
+# 
+# 
+# df_tidy_poblacion_NS <- poblacion_NS %>%
+#   rename(cat = 1) %>%
+#   
+#   mutate(
+#     Nacionalidad = if_else(cat %in% c("Española", "Extranjera"), cat, NA_character_),
+#     edad         = if_else(cat == "Todas las edades", cat, NA_character_),
+#     Sexo         = if_else(cat %in% c("Hombres", "Mujeres"), cat, NA_character_)
+#   ) %>%
+#   
+#   fill(Nacionalidad, edad, Sexo) %>%
+#   
+#   filter(!(cat %in% c("Española", "Extranjera", "Todas las edades"))) %>%
+#   
+#   pivot_longer(
+#     cols = -c(cat, Nacionalidad, edad, Sexo),
+#     names_to = "fecha",
+#     values_to = "Poblacion"
+#   ) %>%
+#   
+#   mutate(
+#     Año = as.factor(str_extract(fecha, "\\d{4}") |> as.integer())
+#   ) %>%
+#   select(Año,Nacionalidad,Sexo,  Poblacion)
+# 
+# 
+# df_tidy_poblacion_NS <- datos_ns_tidy %>% filter(Nacionalidad!="No consta") %>% inner_join(df_tidy_poblacion_NS,by=c("Año","Nacionalidad","Sexo"))
+# 
+# df_tidy_poblacion_NS <- df_tidy_poblacion_NS %>%
+#   group_by(Año, Nacionalidad) %>%
+#   summarise(
+#     Suicidios_total = sum(Total, na.rm = TRUE),
+#     Poblacion_total = sum(Poblacion, na.rm = TRUE),
+#     .groups = "drop"
+#   ) %>%
+#   mutate(Tasa_suicidios = Suicidios_total / Poblacion_total)
+# 
+# 
+# ggplot(df_tidy_poblacion_NS, aes(x = Año, y = Tasa_suicidios, color = Nacionalidad, group = Nacionalidad)) +
+#   geom_line(linewidth = 1.2) +
+#   geom_point() +
+#   labs(
+#     title = "Tasa de suicidios por nacionalidad (total hombres + mujeres)",
+#     x = "Año",
+#     y = "Tasa de suicidios",
+#     color = "Nacionalidad"
+#   ) +
+#   theme_minimal()
 
 ```
 
