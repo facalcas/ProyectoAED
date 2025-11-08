@@ -60,14 +60,7 @@ conflictsofinterest: |
 
 supplementary: |
  
-abbreviations:
-  - short: MDPI
-    long: Multidisciplinary Digital Publishing Institute
-  - short: INE
-    long: Instituto Nacional de Estadística
-
 bibliography: mybibfile.bib
-appendix: appendix.tex
 endnotes: false
 
 output: 
@@ -321,6 +314,81 @@ df_tidy_poblacion_NS <- poblacion_NS %>%
 
  **Agregar explicación de trabajo que se hizo para importación de población**
 
+```{r datasets poblaciones, include=FALSE}
+poblacion_comunidades_1 <- read_excel("../data/poblacion_CA_1.xlsx",skip=6, n_max=20)
+poblacion_comunidades_2 <- read_excel("../data/poblacion_CA_2.xlsx", skip=6,n_max=20)
+convertir_pob_con_tidy <- function(poblacion_comunidades){
+poblacion_comunidades <-poblacion_comunidades  %>%
+  mutate(fila = row_number()) %>%        # añadimos id de fila
+  pivot_longer(
+    cols = -c(1,fila),                  # pivotar todas menos comunidad y fila
+    names_to = "Sexo",
+    values_to = "valor_bruto"
+  ) %>%
+  group_by(Sexo) %>%
+  mutate(
+    Año = valor_bruto[fila == 1],       # el año es el valor de la primera fila
+    Poblacion = if_else(fila == 1, NA, valor_bruto)  # primera fila = año, no población
+  ) %>%
+  ungroup() %>%
+  filter(fila != 1) %>%                 # quitamos sólo la fila pivotada que quedó vacía
+  select(Año, Sexo, Comunidad = 1, Poblacion) %>% 
+  mutate(Sexo=ifelse(str_detect(Sexo, pattern="(Hombres)|(Mujeres)"),Sexo,NA)) %>% 
+  fill(Sexo,.direction = "down") %>% 
+  mutate(Comunidad=gsub(pattern="[0-9]+.",replacement = "",Comunidad)) %>% 
+  mutate(across(-Poblacion,as.factor)) %>% 
+  mutate(Poblacion=as.numeric(Poblacion)) %>% 
+  rename(Territorio=Comunidad) %>% 
+  mutate(Territorio = recode(
+    Territorio,
+    "Balears, Illes" = "Baleares",
+    "Asturias, Principado de" = "Asturias",
+    "Rioja, La" = "Rioja",
+    "Madrid, Comunidad de" = "Madrid",
+    "Navarra, Comunidad Foral de" = "Navarra",
+    "Murcia, Región de" = "Murcia"
+  ))
+return(poblacion_comunidades)
+}
+
+poblacion_comunidades_1<-convertir_pob_con_tidy(poblacion_comunidades_1)
+poblacion_comunidades_2 <- convertir_pob_con_tidy(poblacion_comunidades_2)
+
+poblacion_comunidades <- rbind(poblacion_comunidades_1,poblacion_comunidades_2)
+```
+
+```{r Comunidades-Sexo con poblacion, echo=FALSE}
+CSE_tidy_con_poblacion <- CSE_tidy %>%
+  group_by(Año, Sexo, Territorio) %>%
+  summarise(
+    Total = sum(Total, na.rm = TRUE),
+    .groups = "drop"
+  ) %>% 
+  inner_join(poblacion_comunidades,by=c("Año","Sexo","Territorio"))
+```
+
+```{r Edades población, include=FALSE}
+CSE_poblacion_sexo <- CSE_tidy_con_poblacion %>% 
+  group_by(Año,Sexo) %>% 
+  summarise(
+    Total=sum(Total, na.rm=TRUE),
+    Poblacion=sum(Poblacion, na.rm=TRUE),
+    .groups = "drop"
+  )
+```
+
+```{r Suicidios Población, include=FALSE}
+CSE_solo_comunidades <- CSE_tidy_con_poblacion %>% 
+  group_by(Año, Territorio) %>% 
+  summarise(
+    Total=sum(Total, na.rm=TRUE),
+    Poblacion=sum(Poblacion, na.tm=TRUE),
+    .groups = "drop"
+  ) 
+```
+
+
+
 ## Inspección de los Datos
 
 Con los datos consolidados, se realiza la inspección de las variables con las que se cuenta para el análisis, y se identifican diversas características presentes en cada uno de los datasets.
@@ -341,6 +409,7 @@ suicidios_barras_nacionalidad<-datos_ns_tidy%>%
   mutate(Porcentaje=Total_Suicidios/sum(Total_Suicidios),
          Etiqueta_Porcentaje=scales::percent(Porcentaje,accuracy=0.01))
 ```
+
 ```{r, echo=FALSE, out.width="85%"}
 gr_barras_nacionalidad <- ggplot(suicidios_barras_nacionalidad,
                                  aes(x = reorder(Nacionalidad, -Total_Suicidios),
@@ -595,9 +664,7 @@ print(heatmp_edades)
 
 **Agregar explicación resultados de heatmap por edad**
 
-
-
-```{r mapas, echo=FALSE}
+```{r mapas de suicidios por CA, echo=FALSE}
 ccaa <- esp_get_ccaa(year = "2021") %>% st_as_sf()
 
 ccaa <- ccaa %>%
@@ -614,160 +681,88 @@ ccaa <- ccaa %>%
   ) %>%
   select(Territorio, geometry)
 
-CSE_map <- CSE_tidy %>%
-  group_by(Año, Territorio) %>%
-  summarise(Total = sum(Total), .groups = "drop")
+CSE_map_totals<-CSE_tidy %>%
+  group_by(Año,Territorio)%>%
+  summarise(Total_Absoluto=sum(Total),.groups = "drop")
 
-CSE_map <- ccaa %>%
-  left_join(CSE_map, by = "Territorio")
+CSE_map_F_totals<-ccaa%>%
+  left_join(CSE_map_totals,by = "Territorio")
 
-for (año in 2014:2023) {
-  g_mapa <- CSE_map %>%
-    filter(Año == año) %>%
-    ggplot() +
-    geom_sf(aes(fill = Total), color = "white", linewidth = 0.25) +
-    scale_fill_stepsn(
-      colours = grey(seq(0.9, 0.1, length.out = 7)),
-      n.breaks = 7,
-      trans = "sqrt",
-      na.value = "grey95",
-      name = "Suicidios",
-      labels = label_comma()
-    ) +
-    theme_void() +
-    labs(title = paste("Suicidios por CCAA —", año)) +
-    theme(
-      plot.title.position = "plot",
-      legend.position = "right"
-    )
-  
-  print(g_mapa)
-}
-```
-
-
-```{r, echo=FALSE}
-# library(readxl)
-# poblacion_NS <- read_excel("../data/poblacion_ASN.xlsx", skip=6, n_max = 9)
-# View(poblacion_NS)
-```
-
-```{r poblaciones_ns, echo=FALSE}
-# library(readxl)
-# library(tidyverse)
-# 
-# 
-# df_tidy_poblacion_NS <- poblacion_NS %>%
-#   rename(cat = 1) %>%
-#   
-#   mutate(
-#     Nacionalidad = if_else(cat %in% c("Española", "Extranjera"), cat, NA_character_),
-#     edad         = if_else(cat == "Todas las edades", cat, NA_character_),
-#     Sexo         = if_else(cat %in% c("Hombres", "Mujeres"), cat, NA_character_)
-#   ) %>%
-#   
-#   fill(Nacionalidad, edad, Sexo) %>%
-#   
-#   filter(!(cat %in% c("Española", "Extranjera", "Todas las edades"))) %>%
-#   
-#   pivot_longer(
-#     cols = -c(cat, Nacionalidad, edad, Sexo),
-#     names_to = "fecha",
-#     values_to = "Poblacion"
-#   ) %>%
-#   
-#   mutate(
-#     Año = as.factor(str_extract(fecha, "\\d{4}") |> as.integer())
-#   ) %>%
-#   select(Año,Nacionalidad,Sexo,  Poblacion)
-# 
-# 
-# df_tidy_poblacion_NS <- datos_ns_tidy %>% filter(Nacionalidad!="No consta") %>% inner_join(df_tidy_poblacion_NS,by=c("Año","Nacionalidad","Sexo"))
-# 
-# df_tidy_poblacion_NS <- df_tidy_poblacion_NS %>%
-#   group_by(Año, Nacionalidad) %>%
-#   summarise(
-#     Suicidios_total = sum(Total, na.rm = TRUE),
-#     Poblacion_total = sum(Poblacion, na.rm = TRUE),
-#     .groups = "drop"
-#   ) %>%
-#   mutate(Tasa_suicidios = Suicidios_total / Poblacion_total)
-# 
-# 
-# ggplot(df_tidy_poblacion_NS, aes(x = Año, y = Tasa_suicidios, color = Nacionalidad, group = Nacionalidad)) +
-#   geom_line(linewidth = 1.2) +
-#   geom_point() +
-#   labs(
-#     title = "Tasa de suicidios por nacionalidad (total hombres + mujeres)",
-#     x = "Año",
-#     y = "Tasa de suicidios",
-#     color = "Nacionalidad"
-#   ) +
-#   theme_minimal()
-
-```
-
-```{r Poblaciones para comunidades autonomas}
-poblacion_comunidades_1 <- read_excel("../data/poblacion_CA_1.xlsx",skip=6, n_max=20)
-poblacion_comunidades_2 <- read_excel("../data/poblacion_CA_2.xlsx", skip=6,n_max=20)
-convertir_pob_con_tidy <- function(poblacion_comunidades){
-poblacion_comunidades <-poblacion_comunidades  %>%
-  mutate(fila = row_number()) %>%        # añadimos id de fila
-  pivot_longer(
-    cols = -c(1,fila),                  # pivotar todas menos comunidad y fila
-    names_to = "Sexo",
-    values_to = "valor_bruto"
-  ) %>%
-  group_by(Sexo) %>%
-  mutate(
-    Año = valor_bruto[fila == 1],       # el año es el valor de la primera fila
-    Poblacion = if_else(fila == 1, NA, valor_bruto)  # primera fila = año, no población
-  ) %>%
-  ungroup() %>%
-  filter(fila != 1) %>%                 # quitamos sólo la fila pivotada que quedó vacía
-  select(Año, Sexo, Comunidad = 1, Poblacion) %>% 
-  mutate(Sexo=ifelse(str_detect(Sexo, pattern="(Hombres)|(Mujeres)"),Sexo,NA)) %>% 
-  fill(Sexo,.direction = "down") %>% 
-  mutate(Comunidad=gsub(pattern="[0-9]+.",replacement = "",Comunidad)) %>% 
-  mutate(across(-Poblacion,as.factor)) %>% 
-  mutate(Poblacion=as.numeric(Poblacion)) %>% 
-  rename(Territorio=Comunidad) %>% 
-  mutate(Territorio = recode(
-    Territorio,
-    "Balears, Illes" = "Baleares",
-    "Asturias, Principado de" = "Asturias",
-    "Rioja, La" = "Rioja",
-    "Madrid, Comunidad de" = "Madrid",
-    "Navarra, Comunidad Foral de" = "Navarra",
-    "Murcia, Región de" = "Murcia"
-  ))
-return(poblacion_comunidades)
-}
-
-poblacion_comunidades_1<-convertir_pob_con_tidy(poblacion_comunidades_1)
-poblacion_comunidades_2 <- convertir_pob_con_tidy(poblacion_comunidades_2)
-
-poblacion_comunidades <- rbind(poblacion_comunidades_1,poblacion_comunidades_2)
-
-CSE_tidy_con_poblacion <- CSE_tidy %>%
-  group_by(Año, Sexo, Territorio) %>%
-  summarise(
-    Total = sum(Total, na.rm = TRUE),
-    .groups = "drop"
-  ) %>% 
-  inner_join(poblacion_comunidades,by=c("Año","Sexo","Territorio"))
-```
-
-```{r Poblacion-Sexo}
-CSE_poblacion_sexo <- CSE_tidy_con_poblacion %>% 
-  group_by(Año,Sexo) %>% 
-  summarise(
-    Total=sum(Total, na.rm=TRUE),
-    Poblacion=sum(Poblacion, na.rm=TRUE),
-    .groups = "drop"
+mapas_totals<-CSE_map_F_totals%>%
+  filter(!is.na(Año)) %>%
+  ggplot()+
+  geom_sf(aes(fill=Total_Absoluto),color="white",linewidth=0.1)+
+  facet_wrap(~Año,ncol=4)+
+  scale_fill_gradient(
+    low="white",
+    high = "black",
+    trans="sqrt",
+    na.value="grey95",
+    name="Total Suicidios"
+  )+
+  theme_void()+
+  labs(
+    title = "Total de Suicidios por Comunidad Autónoma 2014-2023"
+  )+
+  theme(
+    plot.title.position = "plot",
+    legend.position = "right"
   )
+print(mapas_totals)
 ```
-```{r Correlacion con poblacion de comunidades autonomas}
+
+**Agregar explicación de Total de número de suicidios por CA**
+
+```{r mapas suicidio por CA cada 100k, echo=FALSE}
+ccaa <- esp_get_ccaa(year = "2021") %>% st_as_sf()
+
+ccaa <- ccaa %>%
+  mutate(
+    Territorio = ine.ccaa.name %>%
+      str_squish() %>%
+      str_remove("^\\d+\\s+") %>%
+      str_remove(",.*$") %>%
+      str_replace("Illes Balears", "Baleares") %>%
+      str_replace("Catalunya", "Cataluña") %>%
+      str_replace("Comunidad Valenciana", "Comunitat Valenciana") %>%
+      str_replace("La Rioja", "Rioja") %>%
+      str_replace("Comunidad de Madrid", "Madrid")
+  ) %>%
+  select(Territorio, geometry)
+
+CSE_tasas<-CSE_solo_comunidades%>%
+  mutate(Tasa_100k=(Total/Poblacion)*100000)%>%
+  mutate(Año=as.factor(Año))
+
+CSE_map_F_tasas <- ccaa %>%
+  left_join(CSE_tasas, by = "Territorio")
+
+mapas_tasas <- CSE_map_F_tasas %>%
+  filter(!is.na(Año)) %>%
+  ggplot() +
+  geom_sf(aes(fill = Tasa_100k), color = "white", linewidth = 0.1) +
+  facet_wrap(~ Año, ncol = 4) +
+  scale_fill_gradient(
+    low="white",
+    high = "black",
+    trans="sqrt",
+    na.value="grey95",
+    name="Tasa por 100.000 habitantes"
+  )+
+  theme_void()+
+  labs(
+    title = "Tasa de Suicidio por CCAA por 100.000 hab."
+  )+
+  theme(
+    plot.title.position = "plot",
+    legend.position = "right"
+  )
+
+print(mapas_tasas)
+```
+
+
+```{r Correlacion con poblacion de comunidades autonomas, echo=FALSE}
 CSE_tidy_con_poblacion %>% 
   group_by(Año, Territorio) %>% 
   summarise(
@@ -779,24 +774,14 @@ CSE_tidy_con_poblacion %>%
   summarise(correlacion=cor(Total, Poblacion))
 ```
 
-```{r}
-CSE_solo_comunidades <- CSE_tidy_con_poblacion %>% 
-  group_by(Año, Territorio) %>% 
-  summarise(
-    Total=sum(Total, na.rm=TRUE),
-    Poblacion=sum(Poblacion, na.tm=TRUE),
-    .groups = "drop"
-  ) 
-
+```{r, echo=FALSE}
 CSE_solo_comunidades%>% 
   ungroup() %>% 
   group_by(Año) %>% 
   summarise(correlacion=cor(Total, Poblacion))
 ```
 
-```{r}
-library(ggplot2)
-
+```{r, echo=FALSE, warning=FALSE,message=FALSE}
 CSE_tidy_con_poblacion %>% 
   group_by(Año, Territorio) %>% 
   summarise(
@@ -813,140 +798,7 @@ CSE_tidy_con_poblacion %>%
 
 ```
 
-## Subsection Heading Here
-
-.
-
-### Subsubsection Heading Here
-
-Bulleted lists look like this:
-
-* First bullet
-* Second bullet
-* Third bullet
-
-Numbered lists can be added as follows:
-
-1. First item
-2. Second item
-3. Third item
-
-The text continues here.
-
-## Figures, Tables and Schemes
-
-All figures and tables should be cited in the main text as Figure \ref{fig:fig1}, 
-\ref{tab:tab1}, etc. To get cross-reference to figure generated by R chunks 
-include the `\\label{}` tag in the `fig.cap` attribute of the R chunk: 
-`fig.cap = "Fancy Caption\\label{fig:plot}"`.
-
-```{r fig1, echo=FALSE, fig.width=3, fig.cap="A figure added with a code chunk.\\label{fig:fig1}"}
-x = rnorm(10)
-y = rnorm(10)
-plot(x, y)
-```
-
-
-When making tables using `kable`, it is suggested to use
-the `format="latex"` and `tabl.envir="table"` arguments
-to ensure table numbering and compatibility with the mdpi
-document class.
-
-```{r tab1, echo=FALSE}
-knitr::kable(mtcars[1:5, 1:3], format = "latex", 
-             booktabs = TRUE, 
-             caption = "This is a table caption. Tables should be placed in the 
-             main text near to the first time they are~cited.", 
-             align = 'ccc', centering = FALSE,
-             table.envir = "table", position = "H")
-```
-
-
-
-For a very wide table, landscape layouts are allowed.
-
-
-\startlandscape
-
-```{r tab2, echo=FALSE}
-df <- data.frame(`Title 1` = c("Entry 1", "Entry 2"),
-                 `Title 2` = c("Data", "Data"),
-                 `Title 3` = c("Data", "Data"),
-                 `Title 4` = c("This cell has some longer content that runs over
-                               two lines",
-                               "Data"))
-knitr::kable(df, format = "latex", 
-             booktabs = TRUE, 
-             caption = "This is a very wide table", 
-             align = 'ccc', centering = FALSE,
-             table.envir = "table", position = "H")
-```
-
-\finishlandscape
-
-## Formatting of Mathematical Components
-
-This is an example of an equation:
-
-$$
-a = 1.
-$$
-
-If you want numbered equations use Latex and wrap in the equation environment:
-
-\begin{equation}
-a = 1,
-\end{equation}
-
-the text following an equation need not be a new paragraph. Please punctuate 
-equations as regular text.
-
-```{comment}
-If the documentclass option "submit" is chosen, please insert a blank line before and after any math environment (equation and eqnarray environments). This ensures correct linenumbering. The blank line should be removed when the documentclass option is changed to "accept" because the text following an equation should not be a new paragraph.
-```
-
-This is the example 2 of equation:
-
-\begin{adjustwidth}{-\extralength}{0cm}
-\begin{equation}
-a = b + c + d + e + f + g + h + i + j + k + l + m + n + o + p + q + r + s + t + 
-u + v + w + x + y + z
-\end{equation}
-\end{adjustwidth}
-
-Theorem-type environments (including propositions, lemmas, corollaries etc.) 
-can be formatted as follows:
-
-Example of a theorem:
-
-::: {.Theorem latex=true}
-Example text of a theorem
-:::
-
-The text continues here. Proofs must be formatted as follows:
-
-Example of a proof:
-
-::: {.proof latex="[Proof of Theorem1]"}
-Text of the proof. Note that the phrase ``of Theorem 1'' is optional if it is 
-clear which theorem is being referred to.
-:::
-
-The text continues here.
-
-# Discussion
-
-Authors should discuss the results and how they can be interpreted in 
-perspective of previous studies and of the working hypotheses. The findings and 
-their implications should be discussed in the broadest context possible. Future 
-research directions may also be highlighted.
-
 # Conclusion
 
 This section is not mandatory, but can be added to the manuscript if the
 discussion is unusually long or complex.
-
-# Patents
-
-This section is not mandatory, but may be added if there are patents resulting
-from the work reported in this manuscript.
