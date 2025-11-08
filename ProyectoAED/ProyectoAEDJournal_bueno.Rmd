@@ -836,7 +836,47 @@ CSE_tidy_con_poblacion %>%
 Efectivamente se observa que existe una relación fuertemente positiva entre población y total de suicidios. Esto confirma que las cifras absolutas están fuertemente condicionada por el tamaño poblacional lo que refuerza aún más las idea del uso de tasas poblacionales para comparar las regiones.
 
 
+```{r}
+CSE_solo_comunidades %>% 
+  ggplot(aes(x=Total))+
+  geom_histogram()
 
+CSE_con_tasas <- CSE_solo_comunidades %>% 
+  mutate(Tasa_Suicidios=Total/Poblacion) 
+
+CSE_con_tasas %>% 
+  ggplot(aes(x=Tasa_Suicidios))+
+  geom_histogram()
+```
+```{r}
+reglasigma <- function(x){
+  rango_1 <- mean(x,na.rm=TRUE) -3*sd(x, na.rm=TRUE)
+  rango_2 <- mean(x,na.rm=TRUE) +3*sd(x, na.rm=TRUE)
+  outliers <- ifelse(is.na(x),NA,ifelse((x < rango_1) | (x > rango_2), TRUE, FALSE))
+  return(outliers)
+}
+
+reglaboxplot <- function(x) {
+  iqr <- IQR(x, na.rm = TRUE)
+  q1 <- as.numeric(quantile(x, probs = 0.25, na.rm = TRUE))
+  q3 <- as.numeric(quantile(x, probs = 0.75, na.rm = TRUE))
+  outliers <- ifelse(is.na(x), NA, (x < q1 - 1.5 * iqr) | (x > q3 + 1.5 * iqr))
+  return(outliers)
+}
+
+```
+
+```{r Outliers}
+CSE_con_tasas[reglaboxplot(CSE_con_tasas$Tasa_Suicidios),]
+CSE_con_tasas[reglasigma(CSE_con_tasas$Tasa_Suicidios),]
+
+df_tidy_poblacion_NS[reglaboxplot(df_tidy_poblacion_NS$Tasa_suicidios),]
+
+CSE_poblacion_sexo_tasas <- CSE_poblacion_sexo %>% 
+  mutate(Tasa_suicidios=Total/Poblacion)
+
+CSE_poblacion_sexo_tasas[reglaboxplot(CSE_poblacion_sexo_tasas$Tasa_suicidios),]
+```
 
 ## Subsection Heading Here
 
