@@ -806,9 +806,6 @@ CSE_tidy_con_poblacion %>%
 
 ```
 
-<<<<<<< HEAD
-=======
-
 
 
 
@@ -940,7 +937,7 @@ perspective of previous studies and of the working hypotheses. The findings and
 their implications should be discussed in the broadest context possible. Future 
 research directions may also be highlighted.
 
->>>>>>> c2a5597189a4145060701427c7a747ceb611bbbb
+
 # Conclusion
 
 This section is not mandatory, but can be added to the manuscript if the
