@@ -328,7 +328,7 @@ Con los datos consolidados, se realiza la inspección de las variables con las q
 El conjunto de datos que cuenta con la información de nacionalidad y sexo, presenta la siguiente estructura. 
 
 ```{r Estructura ns, echo=FALSE}
-glimpse(datos_ns_tidy)
+glimpse(datos_ns_tidy,width = 70)
 ```
 
 Se destaca que la variable `Año` es un factor con niveles de 2014 a 2023, la variable `Sexo` es un factor con los niveles "Hombres" y "Mujeres", la variable `Nacionalidad` se trata como un factor de tres niveles siendo estos: "Española", "Extranjera" y "No Consta". Siendo el nivel `No consta` como personas que se han suicidado pero no se pudo comprobar la nacionalidad de la persona.
@@ -341,7 +341,7 @@ suicidios_barras_nacionalidad<-datos_ns_tidy%>%
   mutate(Porcentaje=Total_Suicidios/sum(Total_Suicidios),
          Etiqueta_Porcentaje=scales::percent(Porcentaje,accuracy=0.01))
 ```
-```{r, echo=FALSE}
+```{r, echo=FALSE, out.width="85%"}
 gr_barras_nacionalidad <- ggplot(suicidios_barras_nacionalidad,
                                  aes(x = reorder(Nacionalidad, -Total_Suicidios),
                                      y = Total_Suicidios,
@@ -349,7 +349,7 @@ gr_barras_nacionalidad <- ggplot(suicidios_barras_nacionalidad,
   geom_col() +
   geom_text(
     aes(label = Etiqueta_Porcentaje),
-    position = position_stack(vjust = 0.5),
+    vjust = -0.5,
     color = "black",
     size = 4
   ) +
@@ -389,7 +389,7 @@ datos_ns_tidy%>%
 El conjunto de datos que presentan los datos de suicidio, separados por mes, sexo y edad, presenta la siguiente estructura. 
 
 ```{r Estructura MSE, echo=FALSE}
-glimpse(MSE_sin_totales)
+glimpse(MSE_sin_totales,width = 70)
 ```
 
 Se disponen de 5 variables llamadas `Año`, `Mes de defunción`,`Sexo`,`Edad` y `Total_suicidios`. Los nombres de estas variables son suficientemente representativos, y todas son de tipo factor excepto la variable numérica de `Total_suicidios`.
@@ -416,7 +416,7 @@ Como se observa, existen meses sin suicidios registrados, y el máximo registrad
 Finalmente, el conjunto de datos con datos separados por Comunidad Autonóma presenta la siguiente estructura.
 
 ```{r Estructura CSE, echo=FALSE}
-glimpse(CSE_tidy)
+glimpse(CSE_tidy,width = 70)
 ```
 
 Se disponen de 5 variables llamadas `Año`, `Territorio`,`Sexo`,`Edad` y `Total`. Como se ha manejado en los otros datasets, se establecen factores para las variables `Año` (con el periodo de estudio de este proyecto), para la variable `Territorio` se establece un factor con 19 niveles que representan las Comunidades y Ciudades Autónomas españolas. Como en los anteriores conjuntos explicados, se establece un factor para `Sexo` y `Edad`, con los niveles analizados.
@@ -440,7 +440,7 @@ CSE_tidy%>%
 Una de las primeras preguntas que surgen a la hora de analizar este caso de estudio, es cómo ha sido la evolución del número de suicidios a lo largo de los años en España. El análisis de esta tendencia es clave para identificar patrones y el posible impacto de eventos puntuales en el número de casos registrados.
 Dado que uno de los objetivos es identificar específicamente el comportamiento de los datos en los últimos años, es difícil de obviar la pandemia del COVID-19 como un posible detonante en el aumento de casos que se han registrado, por lo tanto se destaca con una línea este suceso para marcar este hecho, en el siguiente gráfico ilustra esta evolución. 
 
-```{r grafico lineas 2020, echo=FALSE, message=FALSE, warning=FALSE}
+```{r grafico lineas 2020, echo=FALSE, message=FALSE, warning=FALSE, out.width="90%"}
 MSE_evolucion <-MSE %>% 
   filter(`Mes de defunción`=="Todos los meses",
          Sexo=="Ambos sexos",
@@ -454,6 +454,14 @@ MSE_evolucion %>%
        x = "Año") +
   geom_line(group=1) + 
   geom_vline(xintercept = "2020", linetype = "dashed", color = "red") +
+  annotate("text",
+           x="2020",
+           y=4100,
+           label="Pandemia COVID-19",
+           color="red",
+           size=3.5,
+           hjust=1.1,
+           vjust=0)+
   theme_minimal()
 ```
 
@@ -463,7 +471,7 @@ Estos hallazgos sugieren un posible impacto de la pandemia y sus consecuencias s
 
 Como continuación del análisis de los suicidios registrados en el periodo 2014-2023, se investiga sobre una posible estacionalidad en la ocurrencia de estos hechos. Para indagar en este tema se agrupan los suicidios por el mes en el que ocurrió el hecho, y se estudia para todos los años. El siguiente gráfico muestra un conjunto de boxplots que resumen la distribución de los suicidios para cada mes, permitiendo identificar la mediana de suicidios por mes, así como su variabilidad y posible presencia de valores extremos en algún mes concreto.
 
-```{r box por meses MSE, echo=FALSE, message=FALSE, warning=FALSE}
+```{r box por meses MSE, echo=FALSE, message=FALSE, warning=FALSE,out.width="90%"}
 box_meses<-MSE_sin_totales%>%
   group_by(`Mes de defunción`,Año)%>%
   summarise(Total_sum=sum(Total_suicidios))%>%
@@ -494,7 +502,8 @@ evo_sexo<-MSE_sin_totales%>%
   group_by(Año,Sexo)%>%
   summarise(Total_Anual=sum(Total_suicidios),.groups = "drop")
 ```
-```{r evolucion por sexo, echo=FALSE, out.width="85%"}
+
+```{r evolucion por sexo, echo=FALSE, out.width="90%"}
 gra_anual_sexo<-ggplot(evo_sexo,aes(x=Año,y=Total_Anual,fill = Sexo))+
   geom_col(position = "dodge")+
   scale_fill_manual(values = c("Hombres"="skyblue","Mujeres"="pink"))+
@@ -538,10 +547,10 @@ df_tidy_poblacion_NS <- df_tidy_poblacion_NS %>%
   mutate(Tasa_suicidios_100k = (Suicidios_total / Poblacion_total)*100000)
 ```
 
-```{r grafico tasa suicidio por nacionalidad, echo=FALSE, out.width="85%"}
+```{r grafico tasa suicidio por nacionalidad, echo=FALSE, out.width="90%"}
 ggplot(df_tidy_poblacion_NS, aes(x = Año, y = Tasa_suicidios_100k, color = Nacionalidad, group = Nacionalidad)) +
-  geom_line(linewidth = 1.2) +
-  geom_point(size=2.5) +
+  geom_line() +
+  geom_point() +
   labs(
     title = "Evolución de Tasa de Suicidio por Nacionalidad",
     subtitle = "Suicidios por cada 100.000 habitantes",
@@ -555,46 +564,38 @@ ggplot(df_tidy_poblacion_NS, aes(x = Año, y = Tasa_suicidios_100k, color = Naci
 
 **Agregar explicación de resultados de tasa por nacionalidad**
 
-
-
-```{r, echo=FALSE}
-#Cargamos librerías para graficar
-pacman::p_load(ggplot2,plotly,mapSpain,sf,scales)
-```
-
-```{r piramides_edad, echo=FALSE, message=FALSE, warning=FALSE}
+```{r heatmap edades, echo=FALSE, out.width="90%"}
 niveles_edad <- c("<15 ", "15-29 ", "30-39 ", "40-44 ", "45-49 ", 
                   "50-54 ", "55-59 ", "60-64 ", "65-69 ", "70-74 ", 
                   "75-79 ", "80-84 ", "85-89 ", "90-94 ", "95 +")
+CSE_agg<-CSE_tidy%>%
+  group_by(Año,Sexo,Edad)%>%
+  summarise(Total_Esp=sum(Total,na.rm = T),.groups = "drop")
 
-for (año_actual in unique(CSE_tidy$Año)) {
-  df_plot <- CSE_tidy %>%
-    filter(Año == año_actual) %>%
-    
-    mutate(
-      Total_plot = ifelse(Sexo == "Hombres", -Total, Total),
-      
-      Edad = factor(Edad, levels = rev(niveles_edad))
-    )
-
-  p <- ggplot(df_plot, aes(x = Total_plot, y = Edad, fill = Sexo)) +
-    
-    geom_col(width = 0.9) + 
-    geom_vline(xintercept = 0, color = "white") +
-    
-    scale_x_continuous(labels = function(x) abs(x)) +
-    
-    scale_fill_manual(values = c("Hombres" = "skyblue", "Mujeres" = "pink")) +
-    
-    ggtitle(paste("Pirámide de Suicidios por Edad y Sexo - Año:", año_actual)) +
-    labs(x = "Número de Suicidios", y = "Rango de Edad") +
-    
-    theme_minimal() +
-    theme(legend.position = "bottom")
-
-  print(p)
-}
+heatmp_edades<-ggplot(CSE_agg,
+                      aes(x=Año,
+                          y=factor(Edad,levels = niveles_edad),
+                          fill = Total_Esp))+
+  geom_tile(color="white",linewidth = 0.1)+
+  facet_wrap(~Sexo)+
+  scale_fill_gradient(low="lightblue",high="#b30000")+
+  labs(title="Evolución Anual del Suicidio por Edad y Sexo",
+       x="Año",
+       y="Rango de Edad",
+       fill="Total Anual")+
+  theme_minimal()+
+  theme(
+    axis.text.x = element_text(angle=45,hjust = 1),
+    panel.grid = element_blank(),
+    legend.position = "bottom"
+  )
+print(heatmp_edades)
 ```
+
+
+**Agregar explicación resultados de heatmap por edad**
+
+
 
 ```{r mapas, echo=FALSE}
 ccaa <- esp_get_ccaa(year = "2021") %>% st_as_sf()
