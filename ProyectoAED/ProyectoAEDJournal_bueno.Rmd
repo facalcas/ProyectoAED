@@ -557,6 +557,8 @@ MSE_sin_totales%>%
 
 Se destaca el mes de diciembre que presenta dos valores atípicos, que tras el análisis de los datos de este mes, el valor extremo superior corresponde a diciembre de 2021 (transitado por el contexto de la pandemia) donde se presentaron 349 suicidios. Y por su parte el valor extremo inferior corresponde a un año prepandémico, correspondiente a 2017 con 241 suicidios registrados.
 
+Se considera importante analizar los datos separando el número de suicidios por el sexo de la persona, para de esta forma poder interpretar si los datos de hombres y mujeres presentan variaciones en el comportamiento, que pueda dar paso a conclusiones de esta problemática.
+El siguiente gráfico presenta la evolución anual del número de suicidios desglosado por sexo.
 ```{r suicidios por sexo, include=FALSE}
 evo_sexo<-MSE_sin_totales%>%
   group_by(Año,Sexo)%>%
@@ -577,6 +579,10 @@ gra_anual_sexo<-ggplot(evo_sexo,aes(x=Año,y=Total_Anual,fill = Sexo))+
 print(gra_anual_sexo)
 ```
 
+Desde el análisis visual del gráfico se puede interpretar que existe una profunda brecha de género en la mortalidad por suicidio. Durante todos los años considerados en este estudio, se presentaron más suicidios en hombres que en mujeres. Estos resultados se mantienen en el tiempo, pero también se observa que tanto en hombres como en mujeres, post pandemia, los registros de suicidios se incrementaron.
+
+Para complementar esta evidencia visual, se realiza el análisis de estas variables para identificar que no es cuestión de aleatoriedad los resultados obtenidos. Se realiza la prueba no paramétrica del test de Wilcoxon para el estudio de estas variables, debido a que no se comparan grupos independientes, sino que se comparan datos pareados de hombres y mujeres para cada año.
+
 ```{r test wilcox Hombre-Mujer, echo=FALSE}
 total_hombres<-evo_sexo%>%
   filter(Sexo=="Hombres")%>%
@@ -592,7 +598,10 @@ hommuje_Wilcox<-wilcox.test(x=total_hombres,y = total_mujeres,
 print(hommuje_Wilcox)
 ```
 
-**Agregar explicación gráficos por sexo y test realizado**
+Observando el valor de `p` obtenido con esta prueba, se rechaza la hipótesis nula, que indica que no existe diferencia estadística entre el número de suicidios entre hombres y mujeres mediante el análisis de la mediana de las diferencias.
+Este análisis confirma que la diferencia observada no es causal, la disparidad entre la mortalidad por suicidio en España entre hombres y mujeres es un fenómeno estadísticamente significativo y de gran magnitud. Mediante este tipo de hallazgos, se destaca que las estrategias de prevención de estos sucesos se deben direccionar y adquirir un enfoque de género diferenciado. 
+ 
+Como continuación del análisis, se estudian los datos de suicidio registrados bajo la segmentación de `Nacionalidad`.
 
 ```{r, echo=FALSE}
 df_tidy_poblacion_NS <- datos_ns_tidy %>% filter(Nacionalidad!="No consta") %>% inner_join(df_tidy_poblacion_NS,by=c("Año","Nacionalidad","Sexo"))
