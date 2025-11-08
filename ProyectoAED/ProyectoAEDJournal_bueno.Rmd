@@ -675,6 +675,10 @@ Visualizando el gráfico de izquierda a derecha, se vuelve a encontrar el impact
 Con este mapa de calor se sintetiza, que la narrativa de suicidio en España durante el periodo de 2014 a 2023 se define principalmente en hombres de la mediana edad, y que el impacto de la pandemia no creó un problema nuevo, sino que intensificó el riesgo en estos grupos.  
 
 
+Una pregunta natural que surge de nuestros datos es ¿cómo se distribuyen los suicidios a lo largo de las distintas comunidades autónomas en España?
+
+Para visualizarlo, presentamos unos gráficos en forma de mapa donde cuanto más intenso es el tono de gris, mayor cantidad de suicidios hay en dicha comunidad autónoma.
+
 ```{r mapas de suicidios por CA, echo=FALSE, out.width="90%"}
 ccaa <- esp_get_ccaa(year = "2021") %>% st_as_sf()
 
@@ -722,7 +726,14 @@ mapas_totals<-CSE_map_F_totals%>%
 print(mapas_totals)
 ```
 
-**Agregar explicación de Total de número de suicidios por CA**
+
+Como se desprende de los mapas, el patrón de total de suicidios es relativamente estable a lo largo de todos los años.
+
+Andalucía aparece de forma constante como la comunidad con las cifras más altas, mientras que regiones como Cataluña, Comunidad Valenciana y Madrid muestran valores intermedios. Por otro lado, comunidades con poblaciones más pequeñas como La Rioja, Cantabria o Navarra mantienen tonos significativamente menores.
+
+Este resultado parece lógico, ya que comunidades autónomas con mayor población tienen mayor número de suicidios. Es por ello que para hacer una comparación entre las comunidades autónomas, necesitamos representar una tasa de suicidios que tenga en cuenta su población.
+
+En los siguientes gráficos se representan las tasas de suicidios por cada 100000 habitantes en cada comunidad autónoma, habiendo extraído los datos de población del dataset comentado al principio del documento.
 
 ```{r mapas suicidio por CA cada 100k, echo=FALSE, out.width="90%"}
 ccaa <- esp_get_ccaa(year = "2021") %>% st_as_sf()
@@ -771,8 +782,20 @@ mapas_tasas <- CSE_map_F_tasas %>%
 
 print(mapas_tasas)
 ```
+```{r eval=FALSE, include=FALSE}
+CSE_con_tasas %>% 
+  arrange(desc(Tasa_Suicidios))
+```
 
+Habiendo considerado la población de cada comunidad, podemos observar que Asturias aparece repetidamente como la comunidad con tasas más elevadas a lo largo de los años, destacando también Galicia y Canarias sobre todo en los años más próximos.
 
+Andalucía, Cataluña, Comunidad Valenciana y Madrid ya no destacan sobre el resto ya que comparado con su población no tienen tantos suicidios.
+
+En definitiva, los mapas muestran que las tasas más elevadas se concentran en la franja noroeste del país.
+
+Con el primer conjunto de mapas que hemos mostrado ya se ha podido vislumbrar que la población influye en el número total de suicidios. ¿Podemos decir entonces que están correlacionados?
+
+Si obtenemos la correlación de Pearson entre el número de suicidios y el total de población para la comunidades autónomas, obtenemos que este es de 0.95, es decir, existe una fuerte relación lineal entre los suicidios y el total de población.
 ```{r Correlacion con poblacion de comunidades autonomas, echo=FALSE}
 CSE_tidy_con_poblacion %>% 
   group_by(Año, Territorio) %>% 
@@ -785,13 +808,14 @@ CSE_tidy_con_poblacion %>%
   summarise(correlacion=cor(Total, Poblacion))
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, eval=FALSE, incluse=FALSE}
 CSE_solo_comunidades%>% 
   ungroup() %>% 
   group_by(Año) %>% 
   summarise(correlacion=cor(Total, Poblacion))
 ```
 
+Si visualizamos la población frente a los suicidios (con el correpondiente ajuste lineal) podemos ver este hecho:
 ```{r, echo=FALSE, warning=FALSE,message=FALSE, out.width="85%"}
 CSE_tidy_con_poblacion %>% 
   group_by(Año, Territorio) %>% 
@@ -808,6 +832,8 @@ CSE_tidy_con_poblacion %>%
        y="Suicidios totales")
 
 ```
+
+Efectivamente se observa que existe una relación fuertemente positiva entre población y total de suicidios. Esto confirma que las cifras absolutas están fuertemente condicionada por el tamaño poblacional lo que refuerza aún más las idea del uso de tasas poblacionales para comparar las regiones.
 
 
 
