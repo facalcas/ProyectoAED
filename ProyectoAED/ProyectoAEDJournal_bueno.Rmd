@@ -716,6 +716,14 @@ CSE_poblacion_sexo <- CSE_tidy_con_poblacion %>%
     .groups = "drop"
   )
 ```
+
+
+
+
+
+
+
+
 ## Subsection Heading Here
 
 .
