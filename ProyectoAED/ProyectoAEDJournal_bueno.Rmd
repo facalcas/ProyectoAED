@@ -90,7 +90,6 @@ A través de la exploración y visualización de dichas variables, el trabajo pr
 El análisis se fundamenta en los datos de mortalidad por suicidio en España para el periodo de 2014 a 2023, proporcionados por el INE.
 El punto de partida consistió en múltiples archivos .csv (uno para cada año de estudio), los cuales presentaban un formato estructurado, pero con trabajo por hacer en cuanto al formato de columnas y su distinción por año.
 Las librerías utilizadas para este análisis se presentan acontinuación.
-<<<<<<< HEAD
 
 ```{r, echo=TRUE}
 pacman::p_load(tidyverse,lubridate,dplyr,stringr,readr,purrr,
@@ -729,9 +728,16 @@ poblacion_comunidades <-poblacion_comunidades  %>%
   mutate(Comunidad=gsub(pattern="[0-9]+.",replacement = "",Comunidad)) %>% 
   mutate(across(-Poblacion,as.factor)) %>% 
   mutate(Poblacion=as.numeric(Poblacion)) %>% 
-  rename(Territorio=Comunidad)
-
-levels(poblacion_comunidades$Territorio)[levels(poblacion_comunidades$Territorio)%in%c("Balears, Illes","Asturias, Principado de","Rioja, La","Madrid, Comunidad de", "Navarra, Comunidad Foral de","Murcia, Región de")]<- c("Baleares","Asturias","Rioja","Madrid","Navarra", "Murcia")
+  rename(Territorio=Comunidad) %>% 
+  mutate(Territorio = recode(
+    Territorio,
+    "Balears, Illes" = "Baleares",
+    "Asturias, Principado de" = "Asturias",
+    "Rioja, La" = "Rioja",
+    "Madrid, Comunidad de" = "Madrid",
+    "Navarra, Comunidad Foral de" = "Navarra",
+    "Murcia, Región de" = "Murcia"
+  ))
 return(poblacion_comunidades)
 }
 
@@ -747,9 +753,6 @@ CSE_tidy_con_poblacion <- CSE_tidy %>%
     .groups = "drop"
   ) %>% 
   inner_join(poblacion_comunidades,by=c("Año","Sexo","Territorio"))
-
-
-CSE_tidy_con_poblacion
 ```
 
 ```{r Poblacion-Sexo}
@@ -761,6 +764,52 @@ CSE_poblacion_sexo <- CSE_tidy_con_poblacion %>%
     .groups = "drop"
   )
 ```
+```{r Correlacion con poblacion de comunidades autonomas}
+CSE_tidy_con_poblacion %>% 
+  group_by(Año, Territorio) %>% 
+  summarise(
+    Total=sum(Total, na.rm=TRUE),
+    Poblacion=sum(Poblacion, na.rm=TRUE),
+    .groups = "drop"
+  ) %>% 
+  ungroup() %>% 
+  summarise(correlacion=cor(Total, Poblacion))
+```
+
+```{r}
+CSE_solo_comunidades <- CSE_tidy_con_poblacion %>% 
+  group_by(Año, Territorio) %>% 
+  summarise(
+    Total=sum(Total, na.rm=TRUE),
+    Poblacion=sum(Poblacion, na.tm=TRUE),
+    .groups = "drop"
+  ) 
+
+CSE_solo_comunidades%>% 
+  ungroup() %>% 
+  group_by(Año) %>% 
+  summarise(correlacion=cor(Total, Poblacion))
+```
+
+```{r}
+library(ggplot2)
+
+CSE_tidy_con_poblacion %>% 
+  group_by(Año, Territorio) %>% 
+  summarise(
+    Total=sum(Total, na.rm=TRUE),
+    Poblacion=sum(Poblacion, na.tm=TRUE),
+    .groups = "drop"
+  ) %>% 
+  ggplot(aes(x = Poblacion, y = Total)) +
+  geom_point( aes(color=Territorio)) +
+  geom_smooth(method = "lm")+ 
+  theme(legend.position = "None")+
+  labs(title="Población frente a Total de suicidios por comunidades autónomas",
+       y="Suicidios totales")
+
+```
+
 ## Subsection Heading Here
 
 .
