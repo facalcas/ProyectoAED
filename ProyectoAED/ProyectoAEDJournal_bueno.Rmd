@@ -22,7 +22,7 @@ authorcitation: |
 correspondence: |
   marcelino.martinez@uv.es;
 
-journal: Proyecto AED
+journal: notspecified
 type: article
 status: submit
 
@@ -80,9 +80,8 @@ A través de la exploración y visualización de dichas variables, se busca desc
 
 El análisis se fundamenta en los datos de mortalidad por suicidio en España para el periodo de 2014 a 2023, proporcionados por el INE.
 El punto de partida consistió en múltiples archivos .csv (uno para cada año de estudio), los cuales presentaban un formato estructurado, pero con trabajo por hacer en cuanto al formato de columnas y su distinción por año.
-Las librerías utilizadas para este análisis se presentan a continuación.
 
-```{r, echo=TRUE}
+```{r, include=FALSE}
 pacman::p_load(tidyverse,lubridate,dplyr,stringr,readr,purrr,
                ggplot2,mapSpain,sf,scales,readxl)
 ```
@@ -263,8 +262,8 @@ lista_archivos_ns <- list.files(
 datos_ns_tidy <- map_dfr(lista_archivos_ns, procesar_archivo_ns)
 ```
 
-Se destacan tareas de transformación y limpieza que se realizaron en los conjuntos de datos seleccionados como la creación de una variable `Año` para cada uno de los conjuntos, debido a que en los ficheros originales descargados desde la página del INE no se contaba con esta variable. Se implementó una función que mediante el uso de expresiones regulares extraía el año (proveniente del nombre del fichero .csv), y se crea la variable `Año` en base a esta extracción. También se destaca la gestión de la respectiva codificación del conjunto de datos para evitar problemas al importar los conjuntos además de la corrección en los tipos de datos, referentes a la variables numéricas y categóricas que cada dataset presenta.
-Una vez los ficheros se han tratado, se procede a su concatenación para la creación de los tres respectivos conjuntos de datos que serán utilizados para el análisis en el proyecto.
+Se destacan tareas de transformación y limpieza en los conjuntos de datos, como la creación de una variable `Año` para cada uno de los conjuntos, debido a su ausencia en los ficheros originales proporcionados por el INE. Mediante el uso de expresiones regulares se extrae el año (proveniente del nombre del fichero .csv) y se crea esta variable. Asimismo, se ajustó la codificación de cada conjunto de datos y los tipos de datos numéricos y categóricos para las respectivas variables de los conjuntos.
+Una vez los ficheros se han tratado, se procede a su concatenación para la creación de los tres respectivos dataframes que serán utilizados para el análisis en el proyecto.
 
 ```{r import poblacion nacionalidad 1, include=FALSE}
 poblacion_NS <- read_excel("../data/poblacion_ASN.xlsx", skip=6, n_max = 9)
@@ -296,32 +295,27 @@ df_tidy_poblacion_NS <- poblacion_NS %>%
   select(Año,Nacionalidad,Sexo,  Poblacion)
 ```
 
-  Además de todo esto, resulta evidente pensar que los datos de suicidios recogidos en función de los respectivos grupos ya comentados son absolutos, y pueden no tener una interpretación correcta si comparamos grupos de distinto tamaño.
-  
-  Es por ello que también se han importado datos de poblaciones en España para analizar preguntas de interés que han surgido del estudio de nuestros datos. En particular, se han importado 2 datasets, uno con un desglose de poblaciones por comunidades autónomas en el periodo de estudio, y otro con un desglose por Nacionalidad y Sexo.
-  
-  Estos datos se han obtenido en archivos tipo excel que no presentaban un formato tidy, por lo que previamente se han tenido que hacer transformaciones de los mismos para que adoptasen un formato adecuado y, posteriormente, se ha realizado un join con sus datasets relacionados, sirviendo como claves de unión el Año, Nacionalidad y Sexo en un caso, y el Año, Comunidad Autónoma y Sexo en el otro.
-  
-  De esta forma, cuando sea necesario se puede disponer de un dato relativo al tamaño del grupo: la tasa de suicidios.
+Los datos de mortalidad por suicidio almacenados en estos dataframes son absolutos, y pueden no tener una interpretación correcta si se comparan grupos de distinto tamaño. Es por ello que también se han importado datos de población en España durante el periodo de análisis, esto con el fin de contar con las herramientas para responder a preguntas donde la proporcionalidad del tamaño de los grupos que se analizan es fundamental para entender los resultados. En específico, se importan dos datasets, uno con el desglose de poblaciones por comunidades autónomas en el periodo de estudio, y otro con el desglose por Nacionalidad y Sexo.
+Estos datasets se han obtenido en archivos tipo Excel, descargados desde la página del INE, que no presentaban un formato `tidy`, por lo que se les realizan las transformaciones respectivas para que adopten un formato adecuado para la futura graficación de resultados. De esta forma, cuando sea necesario se puede disponer de un dato relativo al tamaño del grupo, tratándose de la tasa de suicidios.
 
 ```{r datasets poblaciones, include=FALSE}
 poblacion_comunidades_1 <- read_excel("../data/poblacion_CA_1.xlsx",skip=6, n_max=20)
 poblacion_comunidades_2 <- read_excel("../data/poblacion_CA_2.xlsx", skip=6,n_max=20)
 convertir_pob_con_tidy <- function(poblacion_comunidades){
 poblacion_comunidades <-poblacion_comunidades  %>%
-  mutate(fila = row_number()) %>%        # añadimos id de fila
+  mutate(fila = row_number()) %>% 
   pivot_longer(
-    cols = -c(1,fila),                  # pivotar todas menos comunidad y fila
+    cols = -c(1,fila),
     names_to = "Sexo",
     values_to = "valor_bruto"
   ) %>%
   group_by(Sexo) %>%
   mutate(
-    Año = valor_bruto[fila == 1],       # el año es el valor de la primera fila
-    Poblacion = if_else(fila == 1, NA, valor_bruto)  # primera fila = año, no población
+    Año = valor_bruto[fila == 1],
+    Poblacion = if_else(fila == 1, NA, valor_bruto)
   ) %>%
   ungroup() %>%
-  filter(fila != 1) %>%                 # quitamos sólo la fila pivotada que quedó vacía
+  filter(fila != 1) %>%
   select(Año, Sexo, Comunidad = 1, Poblacion) %>% 
   mutate(Sexo=ifelse(str_detect(Sexo, pattern="(Hombres)|(Mujeres)"),Sexo,NA)) %>% 
   fill(Sexo,.direction = "down") %>% 
