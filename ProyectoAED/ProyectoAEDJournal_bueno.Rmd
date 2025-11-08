@@ -89,7 +89,7 @@ A través de la exploración y visualización de dichas variables, el trabajo pr
 
 El análisis se fundamenta en los datos de mortalidad por suicidio en España para el periodo de 2014 a 2023, proporcionados por el INE.
 El punto de partida consistió en múltiples archivos .csv (uno para cada año de estudio), los cuales presentaban un formato estructurado, pero con trabajo por hacer en cuanto al formato de columnas y su distinción por año.
-Las librerías utilizadas para este análisis se presentan acontinuación.
+Las librerías utilizadas para este análisis se presentan a continuación.
 
 ```{r, echo=TRUE}
 pacman::p_load(tidyverse,lubridate,dplyr,stringr,readr,purrr,
@@ -320,6 +320,14 @@ df_tidy_poblacion_NS <- poblacion_NS %>%
 ```
 
  **Agregar explicación de trabajo que se hizo para importación de población**
+ 
+  Además de todo esto, resulta evidente pensar que los datos de suicidios recogidos en función de los respectivos grupos ya comentados son absolutos, y pueden no tener una interpretación correcta si comparamos grupos de distinto tamaño.
+  
+  Es por ello que también se han importado datos de poblaciones en España para analizar preguntas de interés que han surgido del estudio de nuestros datos. En particular, se han importado 2 datasets, uno con un desglose de poblaciones por comunidades autónomas en el periodo de estudio, y otro con un desglose por Nacionalidad y Sexo.
+  
+  Estos datos se han obtenido en archivos tipo excel que no presentaban un formato tidy, por lo que previamente se han tenido que hacer transformaciones de los mismos para que adoptasen un formato adecuado y, posteriormente, se ha realizado un join con sus datasets relacionados, sirviendo como claves de unión el Año, Nacionalidad y Sexo en un caso, y el Año, Comunidad Autónoma y Sexo en el otro.
+  
+  De esta forma, cuando sea necesario se puede disponer de un dato relativo al tamaño del grupo: la tasa de suicidios.
 
 ## Inspección de los Datos
 
@@ -811,6 +819,10 @@ CSE_tidy_con_poblacion %>%
        y="Suicidios totales")
 
 ```
+
+
+
+
 
 ## Subsection Heading Here
 
