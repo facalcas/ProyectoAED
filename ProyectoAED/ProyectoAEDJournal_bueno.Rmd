@@ -601,7 +601,8 @@ print(hommuje_Wilcox)
 Observando el valor de `p` obtenido con esta prueba, se rechaza la hipótesis nula, que indica que no existe diferencia estadística entre el número de suicidios entre hombres y mujeres mediante el análisis de la mediana de las diferencias.
 Este análisis confirma que la diferencia observada no es causal, la disparidad entre la mortalidad por suicidio en España entre hombres y mujeres es un fenómeno estadísticamente significativo y de gran magnitud. Mediante este tipo de hallazgos, se destaca que las estrategias de prevención de estos sucesos se deben direccionar y adquirir un enfoque de género diferenciado. 
  
-Como continuación del análisis, se estudian los datos de suicidio registrados bajo la segmentación de `Nacionalidad`.
+Como continuación del análisis, se estudian los datos de suicidio registrados bajo la segmentación de `Nacionalidad`. El número de suicidios ocurridos en españoles es ampliamente superior a los extranjeros, pero este análisis es trivial y poco informativo debido a que la población española residente en España es mucho mayor que la extranjera.
+Para obtener información de estos datos, se analiza el número de suicidios ocurridos por cada cien mil habitantes, haciendo uso de los datos poblaciones de españoles y extranjeros registrados territorio español durante el 2014 al 2023. Obteniendo lo siguiente.
 
 ```{r, echo=FALSE}
 df_tidy_poblacion_NS <- datos_ns_tidy %>% filter(Nacionalidad!="No consta") %>% inner_join(df_tidy_poblacion_NS,by=c("Año","Nacionalidad","Sexo"))
@@ -631,7 +632,10 @@ ggplot(df_tidy_poblacion_NS, aes(x = Año, y = Tasa_suicidios_100k, color = Naci
   theme(legend.position = "bottom")
 ```
 
-**Agregar explicación de resultados de tasa por nacionalidad**
+Este gráfico contradice el análisis si toma únicamente el número absoluto de suicidios registrados, evidenciando una mayor paridad en las tasas de suicidio por cada 100.000 habitantes entre españoles y extranjeros.
+Se evidencia que la población española tenía una tasa de suicidio superior a la extranjera al inicio del periodo de estudio (2014 a 2016), sin embargo la tasa en extranjeros fue incrementando con el tiempo, alcanzando un pico en 2019 y sobrepasando a la tasa española.
+La tasa de suicidio en españoles presentó un comportamiento general más suave, con incrementos tras la pandemia, mientras que la extranjera presentó picos y valles más pronunciados.
+Se concluye con este gráfico que la población extranjera está lejos de ser un grupo de bajo riesgo ante la problemática de los suicidios, con una alta volatilidad, y que su pico máximo se alcanzara en 2019 (pre-pandemia) rompe con la narrativa de un impacto pandémico unificado para todos los grupos, y sugiere que existen otros factores que afectaron a esta población antes de la crisis sanitaria.
 
 ```{r heatmap edades, echo=FALSE, out.width="90%"}
 niveles_edad <- c("<15 ", "15-29 ", "30-39 ", "40-44 ", "45-49 ", 
