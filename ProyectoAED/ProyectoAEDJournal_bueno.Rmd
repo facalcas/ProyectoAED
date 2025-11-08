@@ -806,9 +806,6 @@ CSE_tidy_con_poblacion %>%
 
 ```
 
-<<<<<<< HEAD
-=======
-
 
 
 
