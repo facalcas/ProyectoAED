@@ -544,8 +544,7 @@ MSE_sin_totales%>%
 
 Se destaca el mes de diciembre por presentar dos valores atípicos: el valor extremo superior corresponde a diciembre de 2021 (durante la pandemia) con 349 suicidios, mientras que el valor extremo inferior corresponde a 2017 (año prepandémico), con 241 casos registrados.
 
-Se considera importante analizar los datos separando el número de suicidios por el sexo de la persona, para de esta forma poder interpretar si los datos de hombres y mujeres presentan variaciones en el comportamiento, que pueda dar paso a conclusiones de esta problemática.
-El siguiente gráfico presenta la evolución anual del número de suicidios desglosado por sexo.
+Es relevante analizar los datos de suicidios por sexo, para identificar posibles diferencias en su comportamiento y derivar a conclusiones específicas de esta problemática. El siguiente gráfico presenta la evolución anual del número de suicidios desglosado por sexo.
 ```{r suicidios por sexo, include=FALSE}
 evo_sexo<-MSE_sin_totales%>%
   group_by(Año,Sexo)%>%
@@ -566,9 +565,9 @@ gra_anual_sexo<-ggplot(evo_sexo,aes(x=Año,y=Total_Anual,fill = Sexo))+
 print(gra_anual_sexo)
 ```
 
-Desde el análisis visual del gráfico se puede interpretar que existe una profunda brecha de género en la mortalidad por suicidio. Durante todos los años considerados en este estudio, se presentaron más suicidios en hombres que en mujeres. Estos resultados se mantienen en el tiempo, pero también se observa que tanto en hombres como en mujeres, post pandemia, los registros de suicidios se incrementaron.
+El gráfico evidencia una profunda brecha de género en la mortalidad por suicidio, con un número consistentemente mayor de casos en hombres que en mujeres a lo largo del periodo estudiado. También se observa que tanto en hombres como en mujeres, post pandemia, los registros de suicidios se incrementaron.
 
-Para complementar esta evidencia visual, se realiza el análisis de estas variables para identificar que no es cuestión de aleatoriedad los resultados obtenidos. Se realiza la prueba no paramétrica del test de Wilcoxon para el estudio de estas variables, debido a que no se comparan grupos independientes, sino que se comparan datos pareados de hombres y mujeres para cada año.
+Para respaldar esta observación, se realiza el análisis de estas variables para identificar que no es cuestión de aleatoriedad los resultados obtenidos. Se realiza la prueba no paramétrica de Wilcoxon, debido a que no se comparan grupos independientes, sino que se comparan datos pareados de hombres y mujeres para cada año.
 
 ```{r test wilcox Hombre-Mujer, echo=FALSE}
 total_hombres<-evo_sexo%>%
@@ -585,7 +584,7 @@ hommuje_Wilcox<-wilcox.test(x=total_hombres,y = total_mujeres,
 print(hommuje_Wilcox)
 ```
 
-Observando el valor de `p` obtenido con esta prueba, se rechaza la hipótesis nula, que indica que no existe diferencia estadística entre el número de suicidios entre hombres y mujeres mediante el análisis de la mediana de las diferencias.
+Con el valor de `p` obtenido en esta prueba, se rechaza la hipótesis nula, que indica que no existe diferencia estadística entre el número de suicidios entre hombres y mujeres mediante el análisis de la mediana de las diferencias.
 Este análisis confirma que la diferencia observada no es causal, la disparidad entre la mortalidad por suicidio en España entre hombres y mujeres es un fenómeno estadísticamente significativo y de gran magnitud. Mediante este tipo de hallazgos, se destaca que las estrategias de prevención de estos sucesos se deben direccionar y adquirir un enfoque de género diferenciado. 
  
 Como continuación del análisis, se estudian los datos de suicidio registrados bajo la segmentación de `Nacionalidad`. El número de suicidios ocurridos en españoles es ampliamente superior a los extranjeros, pero este análisis es trivial y poco informativo debido a que la población española residente en España es mucho mayor que la extranjera.
@@ -663,9 +662,9 @@ Visualizando el gráfico de izquierda a derecha, se vuelve a encontrar el impact
 Con este mapa de calor se sintetiza, que la narrativa de suicidio en España durante el periodo de 2014 a 2023 se define principalmente en hombres de la mediana edad, y que el impacto de la pandemia no creó un problema nuevo, sino que intensificó el riesgo en estos grupos.  
 
 
-Una pregunta natural que surge de nuestros datos es ¿cómo se distribuyen los suicidios a lo largo de las distintas comunidades autónomas en España?
+Una pregunta natural que surge con los datos es ¿cómo se distribuyen los suicidios a lo largo de las distintas comunidades autónomas en España?
 
-Para visualizarlo, presentamos unos gráficos en forma de mapa donde cuanto más intenso es el tono de gris, mayor cantidad de suicidios hay en dicha comunidad autónoma.
+Para visualizarlo, se presentan unos gráficos en forma de mapa donde cuanto más intenso es el tono de gris, mayor cantidad de suicidios hay en dicha comunidad autónoma.
 
 ```{r mapas de suicidios por CA, echo=FALSE, out.width="90%"}
 ccaa <- esp_get_ccaa(year = "2021") %>% st_as_sf()
@@ -719,7 +718,7 @@ Como se desprende de los mapas, el patrón de total de suicidios es relativament
 
 Andalucía aparece de forma constante como la comunidad con las cifras más altas, mientras que regiones como Cataluña, Comunidad Valenciana y Madrid muestran valores intermedios. Por otro lado, comunidades con poblaciones más pequeñas como La Rioja, Cantabria o Navarra mantienen tonos significativamente menores.
 
-Este resultado parece lógico, ya que comunidades autónomas con mayor población tienen mayor número de suicidios. Es por ello que para hacer una comparación entre las comunidades autónomas, necesitamos representar una tasa de suicidios que tenga en cuenta su población.
+Este resultado parece lógico, ya que comunidades autónomas con mayor población tienen mayor número de suicidios. Es por ello que para hacer una comparación entre las comunidades autónomas, se necesita representar una tasa de suicidios que tenga en cuenta la población.
 
 En los siguientes gráficos se representan las tasas de suicidios por cada 100000 habitantes en cada comunidad autónoma, habiendo extraído los datos de población del dataset comentado al principio del documento.
 
@@ -778,15 +777,15 @@ CSE_con_tasas %>%
   arrange(desc(Tasa_Suicidios))
 ```
 
-Habiendo considerado la población de cada comunidad, podemos observar que Asturias aparece repetidamente como la comunidad con tasas más elevadas a lo largo de los años, destacando también Galicia y Canarias sobre todo en los años más próximos.
+Habiendo considerado la población de cada comunidad, se peude observar que Asturias aparece repetidamente como la comunidad con tasas más elevadas a lo largo de los años, destacando también Galicia y Canarias sobre todo en los años más próximos.
 
 Andalucía, Cataluña, Comunidad Valenciana y Madrid ya no destacan sobre el resto ya que comparado con su población no tienen tantos suicidios.
 
 En definitiva, los mapas muestran que las tasas más elevadas se concentran en la franja noroeste del país.
 
-Con el primer conjunto de mapas que hemos mostrado ya se ha podido vislumbrar que la población influye en el número total de suicidios. ¿Podemos decir entonces que están correlacionados?
+Con el primer conjunto de mapas que se mostró ya se ha podido vislumbrar que la población influye en el número total de suicidios. ¿Se puede decir entonces que están correlacionados?
 
-Si obtenemos la correlación de Pearson entre el número de suicidios y el total de población para la comunidades autónomas, obtenemos que este es de 0.95, es decir, existe una fuerte relación lineal entre los suicidios y el total de población.
+Obteniendo la correlación de Pearson entre el número de suicidios y el total de población para la comunidades autónomas, resulta que este es de 0.95, es decir, existe una fuerte relación lineal entre los suicidios y el total de población.
 ```{r Correlacion con poblacion de comunidades autonomas, echo=FALSE}
 CSE_tidy_con_poblacion %>% 
   group_by(Año, Territorio) %>% 
@@ -796,7 +795,8 @@ CSE_tidy_con_poblacion %>%
     .groups = "drop"
   ) %>% 
   ungroup() %>% 
-  summarise(correlacion=cor(Total, Poblacion))
+  summarise(correlacion=cor(Total, Poblacion))%>%
+  kable(digits = 4)
 ```
 
 ```{r, echo=FALSE, eval=FALSE, incluse=FALSE}
@@ -806,7 +806,7 @@ CSE_solo_comunidades%>%
   summarise(correlacion=cor(Total, Poblacion))
 ```
 
-Si visualizamos la población frente a los suicidios (con el correpondiente ajuste lineal) podemos ver este hecho:
+Si se visualzia la población frente a los suicidios (con el correpondiente ajuste lineal) se obtiene lo siguiente:
 ```{r, echo=FALSE, warning=FALSE,message=FALSE, out.width="85%"}
 CSE_tidy_con_poblacion %>% 
   group_by(Año, Territorio) %>% 
