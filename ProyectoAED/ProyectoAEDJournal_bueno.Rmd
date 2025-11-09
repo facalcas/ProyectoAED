@@ -423,7 +423,7 @@ Como se observa en el gráfico, la categoría `No consta` representa una proporc
 En cuanto a la variable `Total`, esta contiene 60 registros que reflejan el número anual de suicidios, desglosado según la nacionalidad de las personas.
 A continuación se presenta un resumen de los datos presentes en esta variable.
 
-```{r, echo=FALSE}
+```{r, echo=FALSE,message=FALSE,warning=FALSE}
 datos_ns_tidy%>%
   filter(Nacionalidad!="No consta")%>%
   summarise(
@@ -446,7 +446,7 @@ glimpse(MSE_sin_totales,width = 70)
 
 Para las variables `Mes de defunción`, `Sexo` y `Edad` se hizo la limpieza de categorías no necesarias como "Todos los meses", "Ambos sexos" y "Todas las edades"; esto para que en la visualización no se agregue ruido innecesario debido a que se tiene la capacidad de presentar esta información mediante agrupamientos de los datos. Por último, se presentan los datos de la variable `Total suicidios`.
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, message=FALSE,warning=FALSE}
 MSE_sin_totales%>%
   summarise(
     Mínimo=min(Total_suicidios,na.rm = TRUE),
@@ -470,7 +470,7 @@ glimpse(CSE_tidy,width = 70)
 
 Las variables `Año` se define con un factor con el correspondiente periodo de estudio del proyecto, la variable `Territorio` incluye 19 niveles que representan las comunidades y ciudades autónomas españolas, De forma coherente con los otros datasets, las variables `Sexo` y `Edad` también se establecen como factores según los niveles analizados.
 Finalmente la variable `Total` muestra el número de suicidios presentados en bajo las condiciones anteriormente explicadas, con los siguientes resultados. 
-```{r, echo=FALSE}
+```{r, echo=FALSE,message=FALSE,warning=FALSE}
 CSE_tidy%>%
   summarise(
     Mínimo=min(Total,na.rm = TRUE),
@@ -484,7 +484,36 @@ CSE_tidy%>%
   kable(digits = 2)
 ```
 
-**Añadir outliers**
+```{r, include=FALSE}
+reglasigma <- function(x){
+  rango_1 <- mean(x,na.rm=TRUE) -3*sd(x, na.rm=TRUE)
+  rango_2 <- mean(x,na.rm=TRUE) +3*sd(x, na.rm=TRUE)
+  outliers <- ifelse(is.na(x),NA,ifelse((x < rango_1) | (x > rango_2), TRUE, FALSE))
+  return(outliers)
+}
+
+reglaboxplot <- function(x) {
+  iqr <- IQR(x, na.rm = TRUE)
+  q1 <- as.numeric(quantile(x, probs = 0.25, na.rm = TRUE))
+  q3 <- as.numeric(quantile(x, probs = 0.75, na.rm = TRUE))
+  outliers <- ifelse(is.na(x), NA, (x < q1 - 1.5 * iqr) | (x > q3 + 1.5 * iqr))
+  return(outliers)
+}
+```
+
+```{r, include=FALSE}
+CSE_con_tasas <- CSE_solo_comunidades %>% 
+   mutate(Tasa_Suicidios=Total/Poblacion)
+
+CSE_con_tasas %>% 
+   ggplot(aes(x=Tasa_Suicidios))+
+   geom_histogram()
+```
+
+```{r, include=FALSE}
+reglasigma(CSE_con_tasas$Tasa_Suicidios)
+```
+
 
 # Resultados
 
@@ -779,14 +808,10 @@ CSE_con_tasas %>%
 
 Habiendo considerado la población de cada comunidad, se peude observar que Asturias aparece repetidamente como la comunidad con tasas más elevadas a lo largo de los años, destacando también Galicia y Canarias sobre todo en los años más próximos.
 
-Andalucía, Cataluña, Comunidad Valenciana y Madrid ya no destacan sobre el resto ya que comparado con su población no tienen tantos suicidios.
-
-En definitiva, los mapas muestran que las tasas más elevadas se concentran en la franja noroeste del país.
-
-Con el primer conjunto de mapas que se mostró ya se ha podido vislumbrar que la población influye en el número total de suicidios. ¿Se puede decir entonces que están correlacionados?
+Andalucía, Cataluña, Comunidad Valenciana y Madrid ya no destacan sobre el resto ya que comparado con su población no tienen tantos suicidios. En definitiva, los mapas muestran que las tasas más elevadas se concentran en la franja noroeste del país. Con el primer conjunto de mapas que se mostró ya se ha podido vislumbrar que la población influye en el número total de suicidios. ¿Se puede decir entonces que están correlacionados?
 
 Obteniendo la correlación de Pearson entre el número de suicidios y el total de población para la comunidades autónomas, resulta que este es de 0.95, es decir, existe una fuerte relación lineal entre los suicidios y el total de población.
-```{r Correlacion con poblacion de comunidades autonomas, echo=FALSE}
+```{r Correlacion con poblacion de comunidades autonomas, echo=FALSE,message=FALSE,warning=FALSE}
 CSE_tidy_con_poblacion %>% 
   group_by(Año, Territorio) %>% 
   summarise(
@@ -821,53 +846,9 @@ CSE_tidy_con_poblacion %>%
   theme(legend.position = "None")+
   labs(title="Población frente a Total de suicidios por comunidades autónomas",
        y="Suicidios totales")
-
 ```
 
 Efectivamente se observa que existe una relación fuertemente positiva entre población y total de suicidios. Esto confirma que las cifras absolutas están fuertemente condicionada por el tamaño poblacional lo que refuerza aún más las idea del uso de tasas poblacionales para comparar las regiones.
-
-
-```{r, include=FALSE}
-# CSE_solo_comunidades %>% 
-#   ggplot(aes(x=Total))+
-#   geom_histogram()
-
-# CSE_con_tasas <- CSE_solo_comunidades %>% 
-#   mutate(Tasa_Suicidios=Total/Poblacion) 
-
-# CSE_con_tasas %>% 
-#   ggplot(aes(x=Tasa_Suicidios))+
-#   geom_histogram()
-```
-```{r, include=FALSE}
-reglasigma <- function(x){
-  rango_1 <- mean(x,na.rm=TRUE) -3*sd(x, na.rm=TRUE)
-  rango_2 <- mean(x,na.rm=TRUE) +3*sd(x, na.rm=TRUE)
-  outliers <- ifelse(is.na(x),NA,ifelse((x < rango_1) | (x > rango_2), TRUE, FALSE))
-  return(outliers)
-}
-
-reglaboxplot <- function(x) {
-  iqr <- IQR(x, na.rm = TRUE)
-  q1 <- as.numeric(quantile(x, probs = 0.25, na.rm = TRUE))
-  q3 <- as.numeric(quantile(x, probs = 0.75, na.rm = TRUE))
-  outliers <- ifelse(is.na(x), NA, (x < q1 - 1.5 * iqr) | (x > q3 + 1.5 * iqr))
-  return(outliers)
-}
-
-```
-
-```{r Outliers, include=FALSE}
-# CSE_con_tasas[reglaboxplot(CSE_con_tasas$Tasa_Suicidios),]
-# CSE_con_tasas[reglasigma(CSE_con_tasas$Tasa_Suicidios),]
-# 
-# df_tidy_poblacion_NS[reglaboxplot(df_tidy_poblacion_NS$Tasa_suicidios),]
-# 
-# CSE_poblacion_sexo_tasas <- CSE_poblacion_sexo %>% 
-#   mutate(Tasa_suicidios=Total/Poblacion)
-# 
-# CSE_poblacion_sexo_tasas[reglaboxplot(CSE_poblacion_sexo_tasas$Tasa_suicidios),]
-```
 
 
 # Conclusiones
