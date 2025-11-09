@@ -90,15 +90,15 @@ pacman::p_load(tidyverse,lubridate,dplyr,stringr,readr,purrr,
 El primer paso fue verificar la codificación de los conjuntos de datos, con el resultado que los conjuntos de Nacionalidad y Sexo y el conjunto de Comunidad Autónoma, Sexo y Edad comparten codificación, siendo esta la `ISO-8859-1`. Mientras que el conjunto de datos de Mes, Sexo y Edad presenta una codificación de `UTF-8`.
 
 ```{r Codificacion ns, include=FALSE}
-guess_encoding("../data/2014ns.csv")
+guess_encoding("data/2014ns.csv")
 ```
 
 ```{r Codificacion CSE, include=FALSE}
-guess_encoding("../data/2014_CSE.csv")
+guess_encoding("data/2014_CSE.csv")
 ```
 
 ```{r Codificación MSE, include=FALSE}
-guess_encoding("../data/2014_MSE.csv")
+guess_encoding("data/2014_MSE.csv")
 ```
 
 Por esta razón, la importación de los conjuntos de datos se realiza en la codificación respectiva, y el análisis y graficación de los datos parte de la codificación asignada.
@@ -115,14 +115,14 @@ MSE <- data.frame(
 colnames(MSE)[1] <- "Mes de defunción"
 
 cargar_y_añadir_MSE <- function(MSE, archivo){
-  MSE_año <- read_delim(paste0("../data/",archivo), 
+  MSE_año <- read_delim(paste0("data/",archivo), 
     delim = ";", escape_double = FALSE, trim_ws = TRUE, locale = locale(grouping_mark = ".",encoding="UTF-8"))
   MSE_año$Año <- gsub(pattern = "_[^1-9]*","", x = archivo)
   MSE <- rbind(MSE,MSE_año)
   return(MSE)
 }
 
-lista_archivos <- grep(x = list.files("../data"), pattern="[1-9]*_MSE.*", value= TRUE)
+lista_archivos <- grep(x = list.files("data"), pattern="[1-9]*_MSE.*", value= TRUE)
 for (archivo in lista_archivos){
   MSE <- cargar_y_añadir_MSE(MSE, archivo)
 }
@@ -147,14 +147,14 @@ MSE_sin_totales <- MSE %>%
 ```
 
 ```{r CSE a Tidy, include=FALSE}
-archivos<-list.files("../data")
+archivos<-list.files("data")
 
 archivos<-grep("CSE\\.csv$", archivos, value = TRUE)
 
 CSE_tidy<-data.frame()
 
 for (CSE in archivos){
-  ruta <- paste0("../data/",CSE)
+  ruta <- paste0("data/",CSE)
   encoding<-guess_encoding(ruta)[[1]][1]
   
   df <- read_delim(ruta, delim = ";", 
@@ -256,7 +256,7 @@ procesar_archivo_ns <- function(archivo_ns) {
 }
 
 lista_archivos_ns <- list.files(
-  path = "../data/",
+  path = "data/",
   pattern = "\\d+ns\\.csv$",
   full.names = TRUE
 )
@@ -268,7 +268,7 @@ Se destacan tareas de transformación y limpieza en los conjuntos de datos, como
 Una vez los ficheros se han tratado, se procede a su concatenación para la creación de los tres respectivos dataframes que serán utilizados para el análisis en el proyecto.
 
 ```{r import poblacion nacionalidad 1, include=FALSE}
-poblacion_NS <- read_excel("../data/poblacion_ASN.xlsx", skip=6, n_max = 9)
+poblacion_NS <- read_excel("data/poblacion_ASN.xlsx", skip=6, n_max = 9)
 ```
 
 ```{r importacion poblacion nacionalidad 2, include=FALSE}
@@ -318,8 +318,8 @@ Los datos de mortalidad por suicidio almacenados en estos dataframes son absolut
 Estos datasets se han obtenido en archivos tipo Excel, descargados desde la página del INE, que no presentaban un formato `tidy`, por lo que se les realizan las transformaciones respectivas para que adopten un formato adecuado para la futura graficación de resultados. De esta forma, cuando sea necesario se puede disponer de un dato relativo al tamaño del grupo, tratándose de la tasa de suicidios.
 
 ```{r datasets poblaciones, include=FALSE}
-poblacion_comunidades_1 <- read_excel("../data/poblacion_CA_1.xlsx",skip=6, n_max=20)
-poblacion_comunidades_2 <- read_excel("../data/poblacion_CA_2.xlsx", skip=6,n_max=20)
+poblacion_comunidades_1 <- read_excel("data/poblacion_CA_1.xlsx",skip=6, n_max=20)
+poblacion_comunidades_2 <- read_excel("data/poblacion_CA_2.xlsx", skip=6,n_max=20)
 convertir_pob_con_tidy <- function(poblacion_comunidades){
 poblacion_comunidades <-poblacion_comunidades  %>%
   mutate(fila = row_number()) %>% 
