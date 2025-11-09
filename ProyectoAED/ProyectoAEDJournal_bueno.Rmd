@@ -484,10 +484,12 @@ CSE_tidy%>%
   kable(digits = 2)
 ```
 
+**Añadir outliers**
+
 # Resultados
 
-Una de las primeras preguntas que surgen a la hora de analizar este caso de estudio, es cómo ha sido la evolución del número de suicidios a lo largo de los años en España. El análisis de esta tendencia es clave para identificar patrones y el posible impacto de eventos puntuales en el número de casos registrados.
-Dado que uno de los objetivos es identificar específicamente el comportamiento de los datos en los últimos años, es difícil de obviar la pandemia del COVID-19 como un posible detonante en el aumento de casos que se han registrado, por lo tanto se destaca con una línea este suceso para marcar este hecho, en el siguiente gráfico ilustra esta evolución. 
+Una de las primeras preguntas del análisis, es la evolución del número de suicidios en España a lo largo del tiempo. Examinar esta tendencia permite identificar patrones y posibles efectos de acontecimientos específicos en la variación del número de casos registrados.
+Dado el interés por el comportamiento reciente de los datos, se destaca la pandemia del COVID-19 como un posible factor asociado al aumento de casos que se han registrado, señalándose este hecho con una línea en el gráfico, se ilustra esta evolución con el siguiente gráfico. 
 
 ```{r grafico lineas 2020, echo=FALSE, message=FALSE, warning=FALSE, out.width="90%"}
 MSE_evolucion <-MSE %>% 
@@ -514,11 +516,9 @@ MSE_evolucion %>%
   theme_minimal()
 ```
 
-Con este gráfico se visualiza un crecimiento notable en el número de suicidios registrados en España concentrado principalmente en los últimos años del periodo analizado.
-Se pueden identificar dos fases, el periodo prepandémico (2014 a 2018), los datos registraron una tendencia variable, alcanzando el punto más bajo en el 2018. A partir del 2019 se observa un cambio, coincidiendo con el inicio de la pandemia, se visualiza un incremento pronunciado en el número de suicidios que se extiende por tres años culminando en 2022, año en el que se registró el máximo de suicidios. Finalmente, en 2023 se muestra un ligero descenso con respecto al año anterior, pero igualmente con un dato superior a los alcanzados en la fase prepandémica.
-Estos hallazgos sugieren un posible impacto de la pandemia y sus consecuencias sociosanitarias en la mortalidad por suicidio en España.
+Se visualiza un aumento notable en el número de suicidios en España, concentrado principalmente en los últimos años del periodo analizado. Se distinguen dos fases: una etapa prepandémica (2014-2018) con una tendencia variable y el mínimo en el 2018, y una etapa posterior (a partir de 2019) caracterizada por un incremento pronunciado en el número de suicidios que culmina en 2022, año en el que se registró el máximo de suicidios. En 2023 se muestra un leve descenso respecto al año anterior, aunque con cifras superiores a las del periodo prepandémico. Estos hallazgos sugieren un posible impacto de la pandemia y sus consecuencias sociosanitarias en la mortalidad por suicidio en España.
 
-Como continuación del análisis de los suicidios registrados en el periodo 2014-2023, se investiga sobre una posible estacionalidad en la ocurrencia de estos hechos. Para indagar en este tema se agrupan los suicidios por el mes en el que ocurrió el hecho, y se estudia para todos los años. El siguiente gráfico muestra un conjunto de boxplots que resumen la distribución de los suicidios para cada mes, permitiendo identificar la mediana de suicidios por mes, así como su variabilidad y posible presencia de valores extremos en algún mes concreto.
+Como continuación del análisis del periodo 2014-2023, se examina la posible estacionalidad en la ocurrencia de los suicidios. Para ello, los casos se agrupan según el mes en el que tuvieron lugar, y se estudia para todos los años. El siguiente gráfico muestra un conjunto de boxplots que resumen la distribución mensual, mostrando la mediana, la variabilidad y la posible presencia de valores extremos en determinados meses.
 
 ```{r box por meses MSE, echo=FALSE, message=FALSE, warning=FALSE,out.width="90%"}
 box_meses<-MSE_sin_totales%>%
@@ -531,9 +531,8 @@ box_meses<-MSE_sin_totales%>%
 print(box_meses)
 ```
 
-A partir de este gráfico, se puede refutar una posible idea de que los suicidios ocurren aleatoriamente durante el año, debido a que se observa un patrón estacional en los datos.
-Contrario a lo que se puede intuir, no son los meses de invierno los que mayores tasas de suicidio presentan, los datos estudiados muestran una mayor incidencia en los meses de verano. Con medianas mayores para los meses de mayo hasta agosto, y progresivamente tras el verano se presenta una disminución.
-También se destacan las cajas más compacta en invierno, significando que además de tener una incidencia menor, la variabilidad a lo largo de los años es baja en estos meses.  
+A partir de este gráfico, se puede refutar una posible idea de que los suicidios ocurren aleatoriamente durante el año, debido a que se observa un patrón estacional.
+Contrario a la expectativa de mayor incidencia en invierno, los datos muestran que los meses de mayor frecuencia de suicidio se presentan en los meses de verano. Con medianas más altas entre mayo y agosto, y progresivamente se presenta una disminución con el paso del tiempo. Además, las cajas más compacta en invierno indican no solo una incidencia menor, sino también una variabilidad baja en estos meses a lo largo de los años.  
 
 ```{r, include=FALSE}
 MSE_sin_totales%>%
@@ -543,7 +542,7 @@ MSE_sin_totales%>%
   arrange(desc(total))
 ```
 
-Se destaca el mes de diciembre que presenta dos valores atípicos, que tras el análisis de los datos de este mes, el valor extremo superior corresponde a diciembre de 2021 (transitado por el contexto de la pandemia) donde se presentaron 349 suicidios. Y por su parte el valor extremo inferior corresponde a un año prepandémico, correspondiente a 2017 con 241 suicidios registrados.
+Se destaca el mes de diciembre por presentar dos valores atípicos: el valor extremo superior corresponde a diciembre de 2021 (durante la pandemia) con 349 suicidios, mientras que el valor extremo inferior corresponde a 2017 (año prepandémico), con 241 casos registrados.
 
 Se considera importante analizar los datos separando el número de suicidios por el sexo de la persona, para de esta forma poder interpretar si los datos de hombres y mujeres presentan variaciones en el comportamiento, que pueda dar paso a conclusiones de esta problemática.
 El siguiente gráfico presenta la evolución anual del número de suicidios desglosado por sexo.
