@@ -14,7 +14,9 @@ affiliation:
       Máster Universitario en Ciencia de Datos -
       Universitat de València -
       ETSE 
-    email: "facalcas@alumni.uv.es"
+    email: 
+      - "facalcas@alumni.uv.es, "
+      - "avaljuan@alumni.uv.es"
 
 authorcitation: |
   Calvo, F.; Martínez, M.; Valton, A.
@@ -30,7 +32,7 @@ simplesummary: |
   Proyecto Análisis Exploratorio de los Datos.
 
 abstract: |
-  A single paragraph of about 200 words maximum. For research articles, abstracts should give a pertinent overview of the work. We strongly encourage authors to use the following style of structured abstracts, but without headings: 1) Background: Place the question addressed in a broad context and highlight the purpose of the study; 2) Methods: Describe briefly the main methods or treatments applied; 3) Results: Summarize the article's main findings; and 4) Conclusion: Indicate the main conclusions or interpretations. The abstract should be an objective representation of the article, it must not contain results which are not presented and substantiated in the main text and should not exaggerate the main conclusions
+  Este estudio realiza un análisis exploratorio de los datos oficiales del Instituto Nacional de Estadística (INE) sobre los suicidios en España entre 2014 y 2023. Las bases de datos incluyen información desglosada por sexo, grupo de edad, mes, nacionalidad y comunidad autónoma, así como datos poblacionales. Tras la importación y limpieza de los datos, se llevaron a cabo tareas de visualización con el objetivo de identificar patrones o posibles factores asociados a la variación en las tasas de suicidio. Finalmente, se desarrolló un análisis para determinar la relación entre el número de suicidios y los factores disponibles. Los resultados aportan una visión global sobre la evolución reciente del fenómeno, proporcionando una base para estudios posteriores.
 
 
 keywords: |
@@ -71,7 +73,7 @@ output:
 
 # Introducción
 
-El suicidio representa un grave problema de salud pública en España y el mundo, cuya compresión es esencial para desarrollar estrategias de prevención efectivas. Este estudio realiza un análisis exploratorio de los datos registrados a la mortalidad por suicidio en España entre 2014 y 2023. Con el objetivo de identificar patrones, tendencias, disparidades demográficas, geográficas y etarias a partir de los datos del INE. El análisis se estructura en torno a tres conjuntos de datos diferenciados: distribución anual por comunidad autónoma, sexo y edad, distribución mensual de los casos en los años estudiados y la distribución de los casos por nacionalidad.
+El suicidio representa un grave problema de salud pública en España y el mundo, cuya comprensión es esencial para desarrollar estrategias de prevención efectivas. Este estudio realiza un análisis exploratorio de los datos registrados de la mortalidad por suicidio en España entre 2014 y 2023, con el objetivo de identificar patrones, tendencias, disparidades demográficas, geográficas y etarias a partir de los datos del INE. El análisis se estructura en torno a tres conjuntos de datos diferenciados: distribución anual por comunidad autónoma, sexo y edad, distribución mensual de los casos en los años estudiados y la distribución de los casos por nacionalidad.
 A través de la exploración y visualización de dichas variables, se busca describir la magnitud de la problemática que se enfrenta, e identificar posibles relaciones entre las variables analizadas.
 
 # Método
@@ -288,12 +290,29 @@ df_tidy_poblacion_NS <- poblacion_NS %>%
     names_to = "fecha",
     values_to = "Poblacion"
   ) %>%
-  
   mutate(
-    Año = as.factor(str_extract(fecha, "\\d{4}") |> as.integer())
-  ) %>%
+    Año = as.factor(str_extract(fecha, "\\d{4}") |> as.integer())) %>% 
+  mutate(Nacionalidad = as.factor(Nacionalidad)) %>% 
+  mutate(Sexo= as.factor(Sexo)) %>%
   select(Año,Nacionalidad,Sexo,  Poblacion)
 ```
+
+```{r, include=FALSE}
+df_tidy_poblacion_NS_1 <- datos_ns_tidy %>% filter(Nacionalidad!="No consta") %>% inner_join(df_tidy_poblacion_NS,by=c("Año","Nacionalidad","Sexo"))
+
+df_tidy_poblacion_NS_1 <- df_tidy_poblacion_NS_1 %>%
+  group_by(Año, Nacionalidad) %>%
+  summarise(
+    Suicidios_total = sum(Total, na.rm = TRUE),
+    Poblacion_total = sum(Poblacion, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(Tasa_suicidios=Suicidios_total/Poblacion_total)%>%
+  mutate(Tasa_suicidios_100k = (Suicidios_total / Poblacion_total)*100000)
+
+```
+
+
 
 Los datos de mortalidad por suicidio almacenados en estos dataframes son absolutos, y pueden no tener una interpretación correcta si se comparan grupos de distinto tamaño. Es por ello que también se han importado datos de población en España durante el periodo de análisis, esto con el fin de contar con las herramientas para responder a preguntas donde la proporcionalidad del tamaño de los grupos que se analizan es fundamental para entender los resultados. En específico, se importan dos datasets, uno con el desglose de poblaciones por comunidades autónomas en el periodo de estudio, y otro con el desglose por Nacionalidad y Sexo.
 Estos datasets se han obtenido en archivos tipo Excel, descargados desde la página del INE, que no presentaban un formato `tidy`, por lo que se les realizan las transformaciones respectivas para que adopten un formato adecuado para la futura graficación de resultados. De esta forma, cuando sea necesario se puede disponer de un dato relativo al tamaño del grupo, tratándose de la tasa de suicidios.
@@ -371,6 +390,23 @@ CSE_solo_comunidades <- CSE_tidy_con_poblacion %>%
   ) 
 ```
 
+```{r, include=FALSE}
+reglasigma <- function(x){
+  rango_1 <- mean(x,na.rm=TRUE) -3*sd(x, na.rm=TRUE)
+  rango_2 <- mean(x,na.rm=TRUE) +3*sd(x, na.rm=TRUE)
+  outliers <- ifelse(is.na(x),NA,ifelse((x < rango_1) | (x > rango_2), TRUE, FALSE))
+  return(outliers)
+}
+
+reglaboxplot <- function(x) {
+  iqr <- IQR(x, na.rm = TRUE)
+  q1 <- as.numeric(quantile(x, probs = 0.25, na.rm = TRUE))
+  q3 <- as.numeric(quantile(x, probs = 0.75, na.rm = TRUE))
+  outliers <- ifelse(is.na(x), NA, (x < q1 - 1.5 * iqr) | (x > q3 + 1.5 * iqr))
+  return(outliers)
+}
+```
+
 
 ## Inspección de los Datos
 
@@ -421,7 +457,7 @@ print(gr_barras_nacionalidad)
 
 Como se observa en el gráfico, la categoría `No consta` representa una proporción insignificante de los casos con apenas un 0.02%, por lo que se excluye del análisis segmentado por `Nacionalidad` que se realizará.
 En cuanto a la variable `Total`, esta contiene 60 registros que reflejan el número anual de suicidios, desglosado según la nacionalidad de las personas.
-A continuación se presenta un resumen de los datos presentes en esta variable.
+A continuación se presenta un resumen de los datos presentes en esta variable, desglosada como hemos dicho por `Año`, `Nacionalidad` y `Sexo`.
 
 ```{r, echo=FALSE,message=FALSE,warning=FALSE}
 datos_ns_tidy%>%
@@ -437,6 +473,20 @@ datos_ns_tidy%>%
   ) %>%
   kable(digits = 2)
 ```
+
+Como para nuestro análisis posterior precisaremos de la tasa de suicidios por nacionalidad (agrupando el sexo y dividiendo entre la población por nacionalidad), inspeccionamos si se presentan outliers. Usaremos la regla boxplot para esta detección.
+
+```{r, include=FALSE}
+ df_tidy_poblacion_NS_1 %>%
+   summarise(
+     `Outliers Tasa Suicidios por Nacionalidad` = sum(reglaboxplot(Tasa_suicidios_100k))
+   )%>%
+   kable(digits = 2)
+```
+
+
+Como podemos observar no hay outliers.
+
 
 El conjunto de datos que presentan los datos de suicidio separados por Mes, Sexo y Edad se compone de cinco variables siendo estas: `Año`, `Mes de defunción`, `Sexo`, `Edad` y `Total suicidios`.  
 
@@ -462,6 +512,7 @@ MSE_sin_totales%>%
 
 Como se observa, existen meses sin suicidios registrados, y el máximo registrado en un mes es de 45 personas (ocurrido en agosto de 2020). Finalmente se muestra que la media de suicidios es de 10.63. Se destaca que este conjunto no presenta valores `NA`.
 
+
 Finalmente, el conjunto de datos con datos separados por comunidad autonóma presenta las variables `Año`, `Territorio`, `Sexo`, `Edad` y `Total`.
 
 ```{r Estructura CSE, include=FALSE}
@@ -484,22 +535,7 @@ CSE_tidy%>%
   kable(digits = 2)
 ```
 
-```{r, include=FALSE}
-reglasigma <- function(x){
-  rango_1 <- mean(x,na.rm=TRUE) -3*sd(x, na.rm=TRUE)
-  rango_2 <- mean(x,na.rm=TRUE) +3*sd(x, na.rm=TRUE)
-  outliers <- ifelse(is.na(x),NA,ifelse((x < rango_1) | (x > rango_2), TRUE, FALSE))
-  return(outliers)
-}
-
-reglaboxplot <- function(x) {
-  iqr <- IQR(x, na.rm = TRUE)
-  q1 <- as.numeric(quantile(x, probs = 0.25, na.rm = TRUE))
-  q3 <- as.numeric(quantile(x, probs = 0.75, na.rm = TRUE))
-  outliers <- ifelse(is.na(x), NA, (x < q1 - 1.5 * iqr) | (x > q3 + 1.5 * iqr))
-  return(outliers)
-}
-```
+Como más adelante precisaremos también de las tasas de suicidio agrupadas por comunidad autónoma, hacemos un análisis de sus outliers con la regla boxplot.
 
 ```{r, include=FALSE}
 CSE_con_tasas <- CSE_solo_comunidades %>% 
@@ -510,9 +546,18 @@ CSE_con_tasas %>%
    geom_histogram()
 ```
 
-```{r, include=FALSE}
-reglasigma(CSE_con_tasas$Tasa_Suicidios)
+```{r, echo=FALSE}
+CSE_con_tasas %>%
+   summarise(
+     `Outliers Tasa Suicidios por Comunidad autónoma` = sum(reglaboxplot(Tasa_Suicidios))
+   )%>%
+   kable(digits = 2)
 ```
+```{r, include=FALSE}
+CSE_con_tasas[reglaboxplot(CSE_con_tasas$Tasa_Suicidios),]
+CSE_con_tasas %>% arrange(desc(Tasa_Suicidios))
+```
+Tras analizar dichos outliers, hemos visto que se correponde a tasas de suicidios superiores a 12 personas o inferiores a 3 personas por cada 100000 habitantes, no siendo valores demasiado extremos respecto del resto de tasas. Por tanto, las mantendremos para nuestro análisis posterior.
 
 
 # Resultados
@@ -554,14 +599,14 @@ box_meses<-MSE_sin_totales%>%
   group_by(`Mes de defunción`,Año)%>%
   summarise(Total_sum=sum(Total_suicidios))%>%
   ggplot(aes(x=`Mes de defunción`, y=Total_sum))+ geom_boxplot()+
-  labs(x="Mes de Defunción",y="Total de Suicidios")+
+  labs(title="Distribución del total de suicidios por meses", x="Mes de Defunción",y="Total de Suicidios")+
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 print(box_meses)
 ```
 
 A partir de este gráfico, se puede refutar una posible idea de que los suicidios ocurren aleatoriamente durante el año, debido a que se observa un patrón estacional.
-Contrario a la expectativa de mayor incidencia en invierno, los datos muestran que los meses de mayor frecuencia de suicidio se presentan en los meses de verano. Con medianas más altas entre mayo y agosto, y progresivamente se presenta una disminución con el paso del tiempo. Además, las cajas más compacta en invierno indican no solo una incidencia menor, sino también una variabilidad baja en estos meses a lo largo de los años.  
+Contrario a la expectativa de mayor incidencia en invierno, los datos muestran que los meses de mayor frecuencia de suicidio se presentan en los meses de verano. Las medianas más altas se sitúan entre mayo y agosto, y progresivamente se presenta una disminución con el paso del tiempo. Además, las cajas más compactas en invierno (diciembre y febrero en particular) indican no solo una incidencia menor, sino también una variabilidad baja en estos meses a lo largo de los años.  
 
 ```{r, include=FALSE}
 MSE_sin_totales%>%
@@ -596,22 +641,26 @@ print(gra_anual_sexo)
 
 El gráfico evidencia una profunda brecha de género en la mortalidad por suicidio, con un número consistentemente mayor de casos en hombres que en mujeres a lo largo del periodo estudiado. También se observa que tanto en hombres como en mujeres, post pandemia, los registros de suicidios se incrementaron.
 
-Para respaldar esta observación, se realiza el análisis de estas variables para identificar que no es cuestión de aleatoriedad los resultados obtenidos. Se realiza la prueba no paramétrica de Wilcoxon, debido a que no se comparan grupos independientes, sino que se comparan datos pareados de hombres y mujeres para cada año.
+Para respaldar esta observación, se realiza el análisis de estas variables para identificar que no es cuestión de aleatoriedad los resultados obtenidos, sino que realmente existe una relación entre el sexo y el número de suicidios. Se realiza la prueba no paramétrica de Wilcoxon, debido a que no se comparan grupos independientes, sino que se comparan datos pareados de hombres y mujeres para cada año, relativizados a la población total en españa dividida en estos 2 grupos.
 
 ```{r test wilcox Hombre-Mujer, echo=FALSE}
-total_hombres<-evo_sexo%>%
-  filter(Sexo=="Hombres")%>%
-  pull(Total_Anual)
+CSE_sexo_con_tasas <- CSE_poblacion_sexo %>% 
+  mutate(Tasa_suicidios_100k=(Total/Poblacion)*100000)
 
-total_mujeres<-evo_sexo%>%
+total_hombres<-CSE_sexo_con_tasas%>%
+  filter(Sexo=="Hombres")%>%
+  pull(Tasa_suicidios_100k)
+
+total_mujeres<-CSE_sexo_con_tasas%>%
   filter(Sexo=="Mujeres")%>%
-  pull(Total_Anual)
+  pull(Tasa_suicidios_100k)
 
 hommuje_Wilcox<-wilcox.test(x=total_hombres,y = total_mujeres,
                            paired = TRUE,
                            alternative = "greater")
 print(hommuje_Wilcox)
 ```
+
 
 Con el valor de `p` obtenido en esta prueba, se rechaza la hipótesis nula, que indica que no existe diferencia estadística entre el número de suicidios entre hombres y mujeres mediante el análisis de la mediana de las diferencias.
 Este análisis confirma que la diferencia observada no es causal, la disparidad entre la mortalidad por suicidio en España entre hombres y mujeres es un fenómeno estadísticamente significativo y de gran magnitud. Mediante este tipo de hallazgos, se destaca que las estrategias de prevención de estos sucesos se deben direccionar y adquirir un enfoque de género diferenciado. 
@@ -652,6 +701,25 @@ Este gráfico contradice el análisis si toma únicamente el número absoluto de
 Se evidencia que la población española tenía una tasa de suicidio superior a la extranjera al inicio del periodo de estudio (2014 a 2016), sin embargo la tasa en extranjeros fue incrementando con el tiempo, alcanzando un pico en 2019 y sobrepasando a la tasa española.
 La tasa de suicidio en españoles presentó un comportamiento general más suave, con incrementos tras la pandemia, mientras que la extranjera presentó picos y valles más pronunciados.
 Se concluye con este gráfico que la población extranjera está lejos de ser un grupo de bajo riesgo ante la problemática de los suicidios, con una alta volatilidad, y que su pico máximo se alcanzara en 2019 (pre-pandemia) rompe con la narrativa de un impacto pandémico unificado para todos los grupos, y sugiere que existen otros factores que afectaron a esta población antes de la crisis sanitaria.
+
+Aún con la mayor paridad observada, si realizamos en test de Wilcoxon con las tasas calculadas diferenciadas por grupos observamos que existen diferencias significativas entre las medianas de ambos grupos debido al bajo p-valor, luego la nacionalidad también es influyente en los suicidios.
+
+```{r, echo=FALSE}
+total_españoles <- df_tidy_poblacion_NS %>% 
+  filter(Nacionalidad=="Española") %>% 
+  pull(Tasa_suicidios_100k)
+
+total_extranjeros<- df_tidy_poblacion_NS %>% 
+  filter(Nacionalidad=="Extranjera") %>% 
+  pull(Tasa_suicidios_100k)
+
+
+
+espext_Wilcox<-wilcox.test(x=total_españoles,y = total_extranjeros,
+                           paired = TRUE,
+                           alternative = "greater")
+print(espext_Wilcox)
+```
 
 Con los resultados de los análisis anteriores se han supuesto conclusiones como el aumento en el número de suicidios post pandemia, también que la gran mayoría de estos suicidios se presentan en hombres y que la población extranjera en España presenta variaciones a lo largo del tiempo en la tasa de suicidio por cada cien mil habitantes.
 Sin embargo no se considera si existen grupos etarios que presentan mayor frecuencia en el número de suicidios. Mediante el siguiente mapa de calor facetado, se visualiza si existen rangos de edad con una mayor incidencia y si los resultados entre hombres y mujeres se asemejan.
@@ -810,7 +878,7 @@ Habiendo considerado la población de cada comunidad, se peude observar que Astu
 
 Andalucía, Cataluña, Comunidad Valenciana y Madrid ya no destacan sobre el resto ya que comparado con su población no tienen tantos suicidios. En definitiva, los mapas muestran que las tasas más elevadas se concentran en la franja noroeste del país. Con el primer conjunto de mapas que se mostró ya se ha podido vislumbrar que la población influye en el número total de suicidios. ¿Se puede decir entonces que están correlacionados?
 
-Obteniendo la correlación de Pearson entre el número de suicidios y el total de población para la comunidades autónomas, resulta que este es de 0.95, es decir, existe una fuerte relación lineal entre los suicidios y el total de población.
+Obteniendo la correlación de Pearson entre el número de suicidios y el total de población para la comunidades autónomas, resulta que este es de 0.95, es decir, existe una fuerte relación lineal entre los suicidios y el total de población y, consecuentemente, entre los suicidios y la comunidad autónoma.
 ```{r Correlacion con poblacion de comunidades autonomas, echo=FALSE,message=FALSE,warning=FALSE}
 CSE_tidy_con_poblacion %>% 
   group_by(Año, Territorio) %>% 
@@ -828,10 +896,10 @@ CSE_tidy_con_poblacion %>%
 CSE_solo_comunidades%>% 
   ungroup() %>% 
   group_by(Año) %>% 
-  summarise(correlacion=cor(Total, Poblacion))
+  summarise(`Correlación`=cor(Total, Poblacion))
 ```
 
-Si se visualzia la población frente a los suicidios (con el correpondiente ajuste lineal) se obtiene lo siguiente:
+Si se visualza la población frente a los suicidios (con el correpondiente ajuste lineal) se obtiene lo siguiente:
 ```{r, echo=FALSE, warning=FALSE,message=FALSE, out.width="85%"}
 CSE_tidy_con_poblacion %>% 
   group_by(Año, Territorio) %>% 
@@ -852,5 +920,11 @@ Efectivamente se observa que existe una relación fuertemente positiva entre pob
 
 
 # Conclusiones
- Estas son las con
 
+El análisis sobre los datos de suicidios en España nos ha permitido identificar patrones relevantes que nos ayudan a comprender mejor este fenómeno. La realización de gráficos y tests estadísticos, así como el análisis de correlaciones, nos ha permitido establecer una realción entre las tasas de suicidios y variables sociodemográficas como el sexo, la población o la nacionalidad.
+
+Los datos muestran que ciertos grupos presentan tasas notablemente superiores, destacando la gran diferencia en el sexo. Esto subraya la necesidad de diseñar estrategias de prevención más específicas y adaptadas a cada grupo.
+
+Así mismo, el estudio también revela una mayor concentración de suicidios en ciertas épocas del año, correspondiéndose estas con los meses de verano, así como en personas de mediana edad.
+
+El análisis realizado desvela la importancia de abordar el tema tratándolo desde una perspectiva integral, desarollando iniciativas preventivas eficaces y mejorando los sistemas de apoyo a la población de riesgo.
