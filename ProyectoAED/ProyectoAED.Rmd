@@ -522,7 +522,7 @@ glimpse(CSE_tidy,width = 70)
 
 Las variables `Año` se define con un factor con el correspondiente periodo de estudio del proyecto, la variable `Territorio` incluye 19 niveles que representan las comunidades y ciudades autónomas españolas, De forma coherente con los otros datasets, las variables `Sexo` y `Edad` también se establecen como factores según los niveles analizados.
 Finalmente la variable `Total` muestra el número de suicidios presentados en bajo las condiciones anteriormente explicadas, con los siguientes resultados. 
-```{r, echo=FALSE,message=FALSE,warning=FALSE}
+```{r, include=FALSE}
 CSE_tidy%>%
   summarise(
     Mínimo=min(Total,na.rm = TRUE),
@@ -547,7 +547,7 @@ CSE_con_tasas %>%
    geom_histogram()
 ```
 
-```{r, echo=FALSE}
+```{r, include=FALSE}
 CSE_con_tasas %>%
    summarise(
      `Outliers Tasa Suicidios por Comunidad autónoma` = sum(reglaboxplot(Tasa_Suicidios))
