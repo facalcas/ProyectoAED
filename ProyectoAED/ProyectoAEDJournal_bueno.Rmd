@@ -98,7 +98,8 @@ año. Las librerías utilizadas para este análisis se presentan
 acontinuación.
 
 ```{r}
-pacman::p_load(tidyverse,lubridate,dplyr,stringr,readr,purrr,readxl)
+pacman::p_load(tidyverse,lubridate,dplyr,stringr,readr,purrr,readxl,
+               plotly,scales,ggrepel,mapSpain,sf)
 ```
 
 El primer paso fue verificar la codificación de los conjuntos de datos,
@@ -213,12 +214,6 @@ for (CSE in archivos){
         str_replace("Ambos.*", "Ambos")
   )
   
-  df <- df %>%
-    filter(
-      Territorio != "Nacional",
-      Sexo != "Ambos",
-      Edad != "Todas"
-    )
 
   df <- df %>%
     mutate(across(where(is.character), as.factor))
@@ -228,20 +223,6 @@ for (CSE in archivos){
 CSE_tidy <- CSE_tidy %>% 
   select(Año,Territorio, Sexo, Edad, Total)
 
-# # Para graficar la pirámide de población
-# CSE_graf <- CSE_tidy %>%
-#   # Para que un sexo se dibuje “hacia la izquierda” y otro hacia la derecha, una de las poblaciones debe ser negativa:
-#   mutate(Total = ifelse(Sexo == "Hombres", -Total, Total)) %>%
-#   filter(Sexo != "Ambos") %>%
-#   filter(Edad != "Todas") %>%
-#   filter(Territorio == "Nacional") %>%
-#   select(Año,Sexo,Edad,Total)
-# # Para graficar el mapa
-# CSE_map <- CSE_tidy %>%
-#   filter(Sexo == "Ambos") %>%
-#   filter(Edad == "Todas") %>%
-#   filter(Territorio != "Nacional") %>%
-#   select(Año,Territorio,Total)
  }
 ```
 
@@ -300,6 +281,120 @@ de datos, referentes a la variables numéricas y categóricas que cada
 dataset presenta. Una vez los ficheros se han tratado, se procede a su
 concatenación para la creación de los tres respectivos conjuntos de
 datos que serán utilizados para el análisis en el proyecto.
+
+Por otro lado, para hacer un estudio de densidad, cargaremos los datos de la
+polación española en el periodo entre 2014 y 2023.
+
+Primero comprobamos la codificación de los archivos:
+
+```{r}
+guess_encoding("../data/Poblacion1.csv")
+guess_encoding("../data/Poblacion2.csv")
+```
+Podemos ver que el dataset `Poblacion1.csv`  tiene codifcación `UTF-8`, y`Poblacion1.csv`, `ISO-8859-1`. 
+
+Los cargamos en un dataframe.
+```{r}
+
+ruta <- "../data/Poblacion1.csv"
+encoding<-guess_encoding(ruta)[[1]][1]
+Poblacion1 <- read_delim(ruta, delim = ";", 
+                   escape_double = FALSE, col_types = cols(Sexo = col_character(),Total=col_number()), 
+                   locale = locale(encoding = encoding,grouping_mark=".",decimal_mark = ","), 
+                   trim_ws = TRUE)
+
+ruta <- "../data/Poblacion2.csv"
+encoding<-guess_encoding(ruta)[[1]][1]
+Poblacion2 <- read_delim(ruta, delim = ";", 
+                   escape_double = FALSE, col_types = cols(Sexo = col_character(),Total=col_number()), 
+                   locale = locale(encoding = encoding,grouping_mark=".",decimal_mark = ","), 
+                   trim_ws = TRUE)
+
+# Editamos los nombres de las variables y seleccionamos los datos con los que vamos a trabajar
+  names(Poblacion1)[2]<-"Territorio"
+  
+  Poblacion1 <- Poblacion1 %>%
+    filter(Sexo == "Ambos sexos", 
+           `Edad (año a año)` == "TOTAL EDADES",
+           Periodo >=2014 & Periodo <= 2023) %>%
+    select(
+           Año = Periodo,
+           Territorio,
+           Nacionalidad = `Españoles/Extranjeros`,
+           Poblacion = Total,
+           Sexo,
+           Edad = `Edad (año a año)`
+           )
+    
+# En la variable territorio faltan datos que corresponden a la totalidad del país  
+  Poblacion1 <- Poblacion1 %>% replace_na(list(Territorio = "Nacional"))
+  
+# Modificamos las columnas characterpara que contengan nombres más fáciles a la hora de pasarlo a factor
+  
+    Poblacion1 <- Poblacion1 %>%
+    mutate(
+      Territorio = Territorio %>%
+        str_squish() %>%
+        str_remove("^\\d+\\s+") %>%
+        str_remove(",.*$") %>%
+        str_replace("Balears", "Baleares"),
+      Sexo = "Ambos",
+      Edad = "Todas"
+  )
+  
+#Pasamos a factor
+  Poblacion1 <- Poblacion1 %>%
+    mutate(across(where(is.character), as.factor)) %>%
+     mutate(across(Año, as.factor))
+#Ahora preparamos Poblacion 2
+  
+  # Editamos los nombres de las variables y seleccionamos los datos con los que vamos a trabajar
+  names(Poblacion2)[2]<-"Territorio"
+  
+  Poblacion2 <- Poblacion2 %>%
+    select(
+           Año = Periodo,
+           Territorio,
+           Poblacion = Total,
+           Sexo
+           ) %>%
+    mutate(Edad = "Todas",
+           Sexo= ifelse(Sexo=="Total","Ambos",Sexo))
+    
+# En la variable territorio faltan datos que corresponden a la totalidad del país  
+  Poblacion2 <- Poblacion2 %>% replace_na(list(Territorio = "Nacional"))
+  
+# Modificamos las columnas characterpara que contengan nombres más fáciles a la hora de pasarlo a factor
+  
+    Poblacion2 <- Poblacion2 %>%
+    mutate(
+      Territorio = Territorio %>%
+        str_squish() %>%
+        str_remove("^\\d+\\s+") %>%
+        str_remove(",.*$") %>%
+        str_replace("Balears", "Baleares"),
+  )
+  
+#Pasamos a factor
+  Poblacion2 <- Poblacion2 %>%
+    mutate(across(where(is.character), as.factor)) %>%
+     mutate(across(Año, as.factor))
+
+```
+
+Y unimos estos datos en el dataframe `CSE_tidy` para poder trabajar en cifras por cada 100.000 habitantes
+
+```{r}
+CSE_tidy<-Poblacion1 %>% 
+  select(-Nacionalidad) %>% 
+  rbind(Poblacion2) %>%
+  full_join(CSE_tidy, by = c("Año","Territorio","Edad","Sexo")) %>%
+  # creamos col percapita y quitamos NA
+  mutate(PerCap = ifelse(is.na(Poblacion),-99,Total/Poblacion*100000),
+         Poblacion = ifelse(is.na(Poblacion),-99,Poblacion))
+```
+
+Como solo hemos trabajado con el total para las categoría de Edad, se han generado `NA` al unir los dataframes, hemos sustituído este dato por `-99`.
 
 ## Inspección de los Datos
 
@@ -364,7 +459,6 @@ correspondientes a los registros "Ambos sexos","Todas las edades" y
 "Todos los meses".
 
 ```{r, echo=FALSE}
-library(tidyverse)
 MSE$`Mes de defunción` <- factor(MSE$`Mes de defunción`, levels=c("enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre", "Todos los meses"))
 
 MSE$Edad <- factor(MSE$Edad, levels=c("Todas las edades","Menores de 15 años","De 15 a 29 años","De 30 a 39 años","De 40 a 44 años","De 45 a 49 años","De 50 a 54 años","De 55 a 59 años","De 60 a 64 años","De 65 a 69 años","De 70 a 74 años","De 75 a 79 años","De 80 a 84 años","De 85 a 89 años","De 90 a 94 años","De 95 años y más"))
@@ -517,9 +611,9 @@ Por último, veremos si existe alguna relación entre alguno de nuestros
 factores y el número total de suicidios.
 
 
-# Results
+# Resultados
 
-## Graficos Calendario
+## Evolución anual del total de suicidios (2014–2023)
 
 Una de las primeras preguntas que surgen a la hora de analizar nuestro
 caso de estudio es qué evolución ha tenido el número de suicidios a lo
@@ -528,13 +622,16 @@ datasets que hemos comentado anteriormente, ya que todos ellos contienen
 ímplicitamente la información de los suicidios totales en cada año.
 
 ```{r grafico-defunciones a lo largo del tiempo}
-library(ggplot2)
 MSE_evolucion <-MSE %>% 
   filter(`Mes de defunción`=="Todos los meses", Sexo=="Ambos sexos", Edad=="Todas las edades")
 
 MSE_evolucion %>% 
   ggplot(aes(x=Año, y=Total_suicidios)) + geom_point() + geom_line(group=1)+geom_vline(xintercept = "2020", linetype = "dashed", color = "red")
 ```
+La serie temporal muestra oscilaciones moderadas en la segunda mitad de la década y un **aumento a partir de 2020** (línea vertical punteada en la figura), que se consolida en 2021–2022.
+
+
+## Estacionalidad: distribución mensual (boxplots)
 
 ```{r}
 #Quitamos totales
@@ -543,7 +640,6 @@ MSE_sin_totales <- MSE %>%
 ```
 
 ```{r boxplot por meses MSE}
-library(plotly)
 p<-MSE %>% 
   filter(`Mes de defunción`!="Todos los meses", Sexo!="Ambos sexos", Edad!="Todas las edades") %>% 
   group_by(`Mes de defunción`,Año) %>% 
@@ -553,9 +649,11 @@ p<-MSE %>%
 p
 #ggplotly(p)
 ```
+El diagrama de cajas por mes (agregando 2014–2023) sugiere un **patrón estacional**: los **meses de verano** (junio–agosto) presentan, en promedio, valores superiores a los meses de invierno, con picos entre **junio y julio**. Enero–febrero se sitúan en la parte baja de la distribución.
+
+
 
 ```{r}
-library(plotly)
 for (año in unique(MSE$Año)) {
   
   df_year <- MSE_sin_totales %>% 
@@ -572,14 +670,9 @@ for (año in unique(MSE$Año)) {
 
 ```
 
-## Graficas Lineas, Nacionalidades
+## Nacionalidad (acumulado 2014–2023)
 
 ```{r}
-library(ggplot2)
-library(dplyr)
-library(plotly)
-library(scales)
-library(ggrepel)
 
 suicidios_por_nacionalidad<-datos_ns_tidy%>%
   group_by(Año,Nacionalidad)%>%
@@ -666,286 +759,259 @@ gr_barras_nacionalidad <- ggplot(suicidios_barras_nacionalidad,
 
 print(gr_barras_nacionalidad)
 ```
+El gráfico de barras muestra que la **gran mayoría de suicidios corresponde a personas de nacionalidad española** (≈90%), frente a un ~9–10% de extranjeras y una fracción mínima de “no consta”. Esta lectura es puramente **en términos absolutos**.
 
 ```{r}
-library(readxl)
-poblacion_NS <- read_excel("../data/poblacion_ASN.xlsx", skip=6, n_max = 9)
-View(poblacion_NS)
+# poblacion_NS <- read_excel("../data/poblacion_ASN.xlsx", skip=6, n_max = 9)
+# View(poblacion_NS)
 ```
 
 ```{r, poblaciones_ns}
-library(readxl)
-library(tidyverse)
-
-
-df_tidy_poblacion_NS <- poblacion_NS %>%
-  rename(cat = 1) %>%
+# df_tidy_poblacion_NS <- poblacion_NS %>%
+#  rename(cat = 1) %>%
   
+#  mutate(
+#    Nacionalidad = if_else(cat %in% c("Española", "Extranjera"), cat, NA_character_),
+#    edad         = if_else(cat == "Todas las edades", cat, NA_character_),
+#    Sexo         = if_else(cat %in% c("Hombres", "Mujeres"), cat, NA_character_)
+#  ) %>%
+  
+#  fill(Nacionalidad, edad, Sexo) %>%
+  
+#  filter(!(cat %in% c("Española", "Extranjera", "Todas las edades"))) %>%
+  
+#  pivot_longer(
+#    cols = -c(cat, Nacionalidad, edad, Sexo),
+#    names_to = "fecha",
+#    values_to = "Poblacion"
+#  ) %>%
+  
+#  mutate(
+#    Año = as.factor(str_extract(fecha, "\\d{4}") |> as.integer())
+#  ) %>%
+#  select(Año,Nacionalidad,Sexo,  Poblacion)
+
+
+#df_tidy_poblacion_NS <- datos_ns_tidy %>% filter(Nacionalidad!="No consta") %>% inner_join(df_tidy_poblacion_NS,by=c("Año","Nacionalidad","Sexo"))
+
+#df_tidy_poblacion_NS <- df_tidy_poblacion_NS %>%
+#  group_by(Año, Nacionalidad) %>%
+#  summarise(
+#    Suicidios_total = sum(Total, na.rm = TRUE),
+#    Poblacion_total = sum(Poblacion, na.rm = TRUE),
+#    .groups = "drop"
+#  ) %>%
+#  mutate(Tasa_suicidios = Suicidios_total / Poblacion_total)
+
+
+#ggplot(df_tidy_poblacion_NS, aes(x = Año, y = Tasa_suicidios, color = Nacionalidad, group = Nacionalidad)) +
+#  geom_line(size = 1.2) +
+#  geom_point() +
+#  labs(
+#    title = "Tasa de suicidios por nacionalidad (total hombres + mujeres)",
+#    x = "Año",
+#    y = "Tasa de suicidios",
+#    color = "Nacionalidad"
+#  ) +
+#  theme_minimal()
+
+```
+
+## Pirámides por sexo y edad
+
+```{r}
+# Para graficar la pirámide de población
+CSE_graf <- CSE_tidy %>%
+  # Para que un sexo se dibuje “hacia la izquierda” y otro hacia la derecha, una de las poblaciones debe ser negativa:
+   mutate(Total = ifelse(Sexo == "Hombres", -Total, Total)) %>%
+   filter(Sexo != "Ambos") %>%
+   filter(Edad != "Todas") %>%
+   filter(Territorio == "Nacional") %>%
+   select(Año,Sexo,Edad,Total)
+```
+
+
+```{r}
+  
+  data <- CSE_graf #%>% 
+
+   Grafico <-ggplot(data, aes(x = Edad, y = Total, fill = Sexo)) +
+    geom_col(width = 0.9) +
+    coord_flip() +
+     scale_y_continuous(labels = abs,
+                        limits = c(-max_global, max_global),
+                        expand = c(0,0)) +
+     labs(
+       title = paste("Pirámide de suicidios"),
+      x = "Edad",
+       y = "Suicidios",
+      fill = "Sexo"
+    ) +
+     facet_wrap(vars(Año), ncol = 5, nrow = 2) +
+     theme_grey()
+   print(Grafico)
+
+
+
+```
+Y haciendo la media por año
+```{r}
+data <- data %>%
+  group_by(Edad,Sexo) %>%
+  summarise(Total = mean(Total))
+
+Grafico <-ggplot(data, aes(x = Edad, y = Total, fill = Sexo)) +
+    geom_col(width = 0.9) +
+    coord_flip() +
+     scale_y_continuous(labels = abs,
+                        limits = c(-max_global, max_global),
+                        expand = c(0,0)) +
+     labs(
+       title = paste("Pirámide de suicidios promediada"),
+      x = "Edad",
+       y = "Suicidios",
+      fill = "Sexo"
+    )
+ print(Grafico)
+
+```
+Las pirámides por año mantienen **formas muy similares** en todo el periodo. En la **pirámide promedio 2014–2023** se observa que la mayor carga se concentra en **grupos de edad de 30–59 años**, con un claro **exceso masculino** (aproximadamente el doble de casos que en mujeres en la mayoría de franjas). En edades muy avanzadas la contribución desciende de forma apreciable en ambos sexos.
+
+## Distribución geográfica (CCAA)
+
+```{r}
+# Para graficar el mapa
+ CSE_map <- CSE_tidy %>%
+   filter(Sexo == "Ambos") %>%
+   filter(Edad == "Todas") %>%
+   filter(Territorio != "Nacional") %>%
+   select(Año,Territorio,Total,PerCap) %>%
+  #PROMEDIAMOS
+   group_by(Territorio) %>%
+   summarise(Total = mean(Total, na.rm = T),
+             PerCap = mean(PerCap, na.rm = T))
+
+ #Cargamos las geometrías de las comunidades autonomas
+ 
+ ccaa<-esp_get_ccaa(moveCAN = T) %>% st_as_sf()
+
+# Modificamos los nombres de las comunidades para que sea mas friendly
+  
+ccaa<-ccaa %>%
   mutate(
-    Nacionalidad = if_else(cat %in% c("Española", "Extranjera"), cat, NA_character_),
-    edad         = if_else(cat == "Todas las edades", cat, NA_character_),
-    Sexo         = if_else(cat %in% c("Hombres", "Mujeres"), cat, NA_character_)
-  ) %>%
-  
-  fill(Nacionalidad, edad, Sexo) %>%
-  
-  filter(!(cat %in% c("Española", "Extranjera", "Todas las edades"))) %>%
-  
-  pivot_longer(
-    cols = -c(cat, Nacionalidad, edad, Sexo),
-    names_to = "fecha",
-    values_to = "Poblacion"
-  ) %>%
-  
-  mutate(
-    Año = as.factor(str_extract(fecha, "\\d{4}") |> as.integer())
-  ) %>%
-  select(Año,Nacionalidad,Sexo,  Poblacion)
-
-
-df_tidy_poblacion_NS <- datos_ns_tidy %>% filter(Nacionalidad!="No consta") %>% inner_join(df_tidy_poblacion_NS,by=c("Año","Nacionalidad","Sexo"))
-
-df_tidy_poblacion_NS <- df_tidy_poblacion_NS %>%
-  group_by(Año, Nacionalidad) %>%
-  summarise(
-    Suicidios_total = sum(Total, na.rm = TRUE),
-    Poblacion_total = sum(Poblacion, na.rm = TRUE),
-    .groups = "drop"
-  ) %>%
-  mutate(Tasa_suicidios = Suicidios_total / Poblacion_total)
-
-
-ggplot(df_tidy_poblacion_NS, aes(x = Año, y = Tasa_suicidios, color = Nacionalidad, group = Nacionalidad)) +
-  geom_line(size = 1.2) +
-  geom_point() +
-  labs(
-    title = "Tasa de suicidios por nacionalidad (total hombres + mujeres)",
-    x = "Año",
-    y = "Tasa de suicidios",
-    color = "Nacionalidad"
-  ) +
-  theme_minimal()
-
-```
-
-```{r}
-#Cargamos librerías para graficar
-pacman::p_load(ggplot2,plotly,mapSpain,sf,scales)
-```
-
-##Grafica Piramide
-
-```{r}
-# library(ggplot2)
-# 
-# años<-levels(CSE_graf$Año)
-# max_global <- max(abs(CSE_graf$Total))
-# 
-# for (año in años){
-#   
-#   data <- CSE_graf %>% 
-#     filter(Año == año)
-#   
-# 
-#   Grafico <-ggplot(data, aes(x = Edad, y = Total, fill = Sexo)) +
-#     geom_col(width = 0.9) +
-#     coord_flip() +
-#     scale_y_continuous(labels = abs, limits = c(-max_global, max_global)) +
-#     labs(
-#       title = paste("Pirámide de suicidios",año),
-#       x = "Edad",
-#       y = "Suicidios",
-#       fill = "Sexo"
-#     ) +
-#     theme_grey()
-#   
-#   print(Grafico)
-#  
-# }
-
-
-```
-
-```{r}
-# brks <- pretty(c(0, max_global))
-# tickvals <- c(-brks, brks)        # valores a ambos lados
-# ticktext <- c(brks, brks)         # etiquetas siempre positivas
-# 
-# p <- plot_ly(
-#   data = CSE_graf,
-#   x = ~Total, y = ~Edad,
-#   color = ~Sexo,
-#   colors = c("Hombres" = "#E86E34", "Mujeres" = "#5E7CE2"),
-#   type = "bar", orientation = "h",
-#   frame = ~Año,
-#   hovertemplate = "Edad: %{y}<br>Suicidios: %{customdata}<extra></extra>",
-#   customdata = ~abs(Total)
-# ) %>%
-#   layout(
-#     barmode = "relative",
-#     # ----- Título centrado + más espacio arriba -----
-#     title = list(text = "Pirámide de suicidios", x = 0.5, xanchor = "center",
-#                  font = list(size = 22)),
-#     margin = list(t = 90),                # más margen superior para el título
-# 
-#     # ----- Ejes -----
-#     xaxis = list(
-#       title = "Suicidios",
-#       range = c(-(max_global+50), (max_global+50)),
-#       tickvals = tickvals,
-#       ticktext = ticktext,
-#       zeroline = FALSE                    # quitamos la zeroline para usar la nuestra
-#     ),
-#     yaxis = list(title = "Edad"),
-# 
-#     # ----- Leyenda dentro de la trama -----
-#     legend = list(
-#       x = 0.98, y = 0.98,                 # esquina sup. derecha
-#       xanchor = "right", yanchor = "top",
-#       bgcolor = "rgba(255,255,255,0.75)", # caja semitransparente
-#       bordercolor = "rgba(0,0,0,0.2)",
-#       borderwidth = 1,
-#       orientation = "v",
-#       font = list(size = 12)
-#     ),
-# 
-#     # ----- (Opcional) línea vertical en x=0 -----
-#     shapes = list(list(
-#       type = "line", x0 = 0, x1 = 0, xref = "x",
-#       y0 = 0, y1 = 1, yref = "paper",
-#       line = list(color = "rgba(0,0,0,0.6)", width = 1)
-#     )),
-# 
-#     bargap = 0.15
-#   ) %>%
-#   animation_slider(currentvalue = list(prefix = "Año: ")) %>%
-#   animation_opts(frame = 600, easing = "linear", redraw = FALSE)
-# 
-# p
-```
-
-## Grafica Mapa
-
-```{r}
-# #Cargamos las geometrías de las comunidades autonomas
-# 
-# ccaa<-esp_get_ccaa(moveCAN = T) %>% st_as_sf()
-# 
-# # Modificamos los nombres de las comunidades para que sea mas friendly
-#   
-# ccaa<-ccaa %>%
-#   mutate(
-#     Territorio = ine.ccaa.name %>%
-#       # 1) Quitar espacios extremos
-#       str_squish() %>%
-#       # 2) Quitar prefijo numérico
-#       str_remove("^\\d+\\s+") %>%
+    Territorio = ine.ccaa.name %>%
+      # 1) Quitar espacios extremos
+      str_squish() %>%
+      # 2) Quitar prefijo numérico
+      str_remove("^\\d+\\s+") %>%
 #       # 3) Quedarse con lo anterior a la primera coma
-#       str_remove(",.*$") %>%
+      str_remove(",.*$") %>%
 #       # 4) Casos excepcionales
-#       str_replace("Balears", "Baleares")
-#   ) %>%
-#   # Filtramos columnas inecesarias
-#   select(Territorio,geometry)
-# 
-# #Unimos la info
-# 
-# CSE_map<- ccaa %>%
-#   left_join(CSE_map, by = "Territorio")
-# 
-# 
-# ```
-# 
-# ```{r}
-# for (año in años) {
-#   
-#   # Mapa base
-#   g_mapa <- CSE_map %>%
-#     filter(Año == año) %>%
-#     ggplot() +
-#     geom_sf(aes(fill = Total), color = "white", linewidth = 0.25) +
-#   
-#     # Escala en grises
-#     scale_fill_stepsn(
-#       colours = grey(seq(0.9, 0.1, length.out = 7)),
-#       n.breaks = 7,
-#       trans = "sqrt",
-#       na.value = "grey95",
-#       name = "Suicidios",
-#       labels = label_comma()
-#     ) +
-#   
-#     # solo el mapa (sin título ni leyenda “encima”)
-#     theme_void() + #esto me quita las coordenadas
-#     theme(
-#       panel.background = element_rect(fill = "grey95", color = NA),
-#       plot.background  = element_rect(fill = "grey95", color = "grey80", linewidth = 0.6),
-#       legend.position = "none",   # quitamos la leyenda aquí (la añadimos fuera)
-#       
-#     ) +
-#     # Añadimos titulo y leyenda fuera
-#     labs(title = paste("Suicidios por CCAA —", año)) +
-#     theme(
-#       plot.title.position = "plot",
-#       plot.background = element_rect(fill = "white", color = NA),
-#       panel.background = element_rect(fill = "grey95", color = NA),
-#       legend.position = "right"
-#     )
-#   
-#   print(g_mapa)
-    
-#}
+       str_replace("Balears", "Baleares")
+   ) %>%
+   # Filtramos columnas inecesarias
+  select(Territorio,geometry)
+ 
+ #Unimos la info
+ 
+ CSE_map<- ccaa %>%
+   left_join(CSE_map, by = "Territorio")
+ 
+
+ 
+ 
 ```
 
 ```{r}
+#Por Totales
+   
+   # Mapa base
+   g_mapa <- CSE_map %>%
+     ggplot() +
+     geom_sf(aes(fill = Total), color = "white", linewidth = 0.25) +
+   
+     # Escala en grises
+     scale_fill_stepsn(
+       colours = grey(seq(0.9, 0.1, length.out = 7)),
+       n.breaks = 7,
+       trans = "sqrt",
+      na.value = "grey95",
+      name = "Suicidios",
+      labels = label_comma()
+     ) +
+   
+     # solo el mapa (sin título ni leyenda “encima”)
+     theme_void() + #esto me quita las coordenadas
+     theme(
+       panel.background = element_rect(fill = "grey95", color = NA),
+       plot.background  = element_rect(fill = "grey95", color = "grey80", linewidth = 0.6),
+       legend.position = "none",   # quitamos la leyenda aquí (la añadimos fuera)
+      
+    ) +
+     # Añadimos titulo y leyenda fuera
+     labs(title = "Suicidios Totales por CCAA") +
+     theme(
+       plot.title.position = "plot",
+       plot.background = element_rect(fill = "white", color = NA),
+       panel.background = element_rect(fill = "grey95", color = NA),
+       legend.position = "right"
+     )
+   
+   print(g_mapa)
 
-
-# # Escala fija (opcional) para que todos los años compartan el mismo máximo
-# zmax <- max(CSE_map$Total, na.rm = TRUE)
-# 
-# # Paleta en grises (claro -> oscuro)
-# pal_grey <- grey(seq(0.95, 0.2, length.out = 7))
-# 
-# p_mapa <- plot_ly() %>%
-#   add_sf(
-#     data  = CSE_map,
-#     split = ~Territorio,            # una traza por CCAA
-#     frame = ~Año,                   # <-- slider por año
-#     color = ~Total,                 # colorear por Total
-#     colors = pal_grey,              # paleta en grises
-#     text = ~paste0(
-#       "<b>", Territorio, "</b><br>",
-#       "Suicidios: ", comma(Total)
-#     ),
-#     hoverinfo = "text",
-#     stroke = I("white"),            # borde blanco entre CCAA
-#     span = I(1)                     # relleno sólido del polígono
-#   ) %>%
-#   layout(
-#     title  = list(text = "Suicidios por CCAA", x = 0.5, xanchor = "center",
-#                   font = list(size = 22)),
-#     margin = list(t = 80, r = 110, b = 20, l = 20),
-#     # Barra de color (leyenda) a la derecha, fuera del mapa
-#     coloraxis = list(
-#       colorscale = list(c(0, pal_grey[1]), c(1, pal_grey[length(pal_grey)])),
-#       cmin = 0, cmax = zmax,
-#       colorbar = list(title = "Suicidios", len = 0.8, x = 1.04, y = 0.5)
-#     ),
-#     showlegend = FALSE
-#   ) %>%
-#   animation_slider(currentvalue = list(prefix = "Año: ")) %>%
-#   animation_opts(frame = 600, easing = "linear", redraw = FALSE)
-# 
-# p_mapa
+#Por 100.000 Habt
+   g_mapa <- CSE_map %>%
+     ggplot() +
+     geom_sf(aes(fill = PerCap), color = "white", linewidth = 0.25) +
+   
+     # Escala en grises
+     scale_fill_stepsn(
+       colours = grey(seq(0.9, 0.1, length.out = 7)),
+       n.breaks = 7,
+       trans = "sqrt",
+      na.value = "grey95",
+      name = "Suicidios",
+      labels = label_comma()
+     ) +
+   
+     # solo el mapa (sin título ni leyenda “encima”)
+     theme_void() + #esto me quita las coordenadas
+     theme(
+       panel.background = element_rect(fill = "grey95", color = NA),
+       plot.background  = element_rect(fill = "grey95", color = "grey80", linewidth = 0.6),
+       legend.position = "none",   # quitamos la leyenda aquí (la añadimos fuera)
+      
+    ) +
+     # Añadimos titulo y leyenda fuera
+     labs(title = "Suicidios cada 100.000 Habitantes por CCAA") +
+     theme(
+       plot.title.position = "plot",
+       plot.background = element_rect(fill = "white", color = NA),
+       panel.background = element_rect(fill = "grey95", color = NA),
+       legend.position = "right"
+     )
+   
+   print(g_mapa)
 
 ```
+- **Mapa de totales (conteos)**: las CCAA más pobladas concentran más casos, como era esperable por efecto de tamaño (p. ej., Andalucía). Por ello, este mapa sirve solo como referencia visual de volumen.
+- **Mapa por 100.000 habitantes (promedio 2014–2023)**: al relativizar, emergen diferencias territoriales. Se aprecia un **gradiente con valores relativamente más altos hacia el norte y el este**, mientras que **Madrid y Cataluña** destacan por **valores medios-bajos** en la comparación per cápita dentro del periodo. Las **islas** (Baleares y Canarias) y el **sureste peninsular** (Andalucía oriental, Murcia, Comunidad Valenciana, Castilla–La Mancha) presentan un patrón intermedio. En el **noroeste** se observa un repunte relativo (promedio del periodo).
 
-# Discussion
+> Nota: estas son comparaciones **promedio 2014–2023**; en un análisis por año podrían aparecer matices. Además, las diferencias territoriales pueden reflejar tanto estructura demográfica como otros factores no observados (socioeconómicos, sanitarios, culturales, climáticos, etc.).
 
-Authors should discuss the results and how they can be interpreted in
-perspective of previous studies and of the working hypotheses. The
-findings and their implications should be discussed in the broadest
-context possible. Future research directions may also be highlighted.
+
+# Discusión
+
+## Lecturas principales
+
+1. **Tendencia reciente**: el incremento a partir de 2020 sugiere un cambio de nivel que conviene monitorizar. Sin analizar causas, podría estar relacionado con factores psicosociales y económicos relacionados con ese periodo, como podría ser la pandemia y la cuarentena.
+
+2. **Estacionalidad**: el patrón verano > invierno es consistente en el agregado 2014–2023. Esto podría conectar con variables ambientales o sociales estacionales.
+
+3. **Desigualdad por sexo y edad**: el exceso masculino y la concentración en 30–59 años son robustos a través del tiempo, lo que señala segmentos de **alto riesgo relativo** para focalizar políticas preventivas.
+
+4. **Heterogeneidad territorial**: las diferencias entre CCAA **se acentúan** al trabajar con tasas. El patrón norte/este más alto (con la salvedad de Madrid y Cataluña) invita a explorar factores contextuales (estructura por edad, ocupación, renta, servicios de salud mental, ruralidad, etc.).
+
 
 # Conclusion
 
