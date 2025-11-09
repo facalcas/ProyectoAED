@@ -83,7 +83,7 @@ El punto de partida consistió en múltiples archivos .csv (uno para cada año d
 
 ```{r, include=FALSE}
 pacman::p_load(tidyverse,lubridate,dplyr,stringr,readr,purrr,
-               ggplot2,mapSpain,sf,scales,readxl)
+               ggplot2,mapSpain,sf,scales,readxl,knitr)
 ```
 El primer paso fue verificar la codificación de los conjuntos de datos, con el resultado que los conjuntos de Nacionalidad y Sexo y el conjunto de Comunidad Autónoma, Sexo y Edad comparten codificación, siendo esta la `ISO-8859-1`. Mientras que el conjunto de datos de Mes, Sexo y Edad presenta una codificación de `UTF-8`.
 
@@ -374,16 +374,14 @@ CSE_solo_comunidades <- CSE_tidy_con_poblacion %>%
 
 ## Inspección de los Datos
 
-Con los datos consolidados, se realiza la inspección de las variables con las que se cuenta para el análisis, y se identifican diversas características presentes en cada uno de los datasets.
+Con los datos consolidados, se realizó una inspección inicial de las variables disponibles. El dataframe que cuenta con la información de nacionalidad y sexo, se compone de 4 variables siendo estas `Año`, `Nacionalidad`, `Sexo` y `Total`. 
 
-El conjunto de datos que cuenta con la información de nacionalidad y sexo, presenta la siguiente estructura. 
-
-```{r Estructura ns, echo=FALSE}
+```{r Estructura ns, include=FALSE}
 glimpse(datos_ns_tidy,width = 70)
 ```
 
-Se destaca que la variable `Año` es un factor con niveles de 2014 a 2023, la variable `Sexo` es un factor con los niveles "Hombres" y "Mujeres", la variable `Nacionalidad` se trata como un factor de tres niveles siendo estos: "Española", "Extranjera" y "No Consta". Siendo el nivel `No consta` como personas que se han suicidado pero no se pudo comprobar la nacionalidad de la persona.
-Como parte de las decisiones tomadas con este conjunto, se analiza la proporción que esta categoría presenta en los datos, con los siguientes resultados.
+La variable `Año` es un factor con niveles de 2014 a 2023, mientras que `Sexo` incluye los niveles "Hombres" y "Mujeres". Por su parte la variable `Nacionalidad` presenta tres niveles siendo estos: "Española", "Extranjera" y "No consta". Siendo el nivel `No consta` casos en los que no fue posible determinar la nacionalidad de la persona.
+Como parte de las decisiones tomadas con este conjunto, se analiza la proporción que esta categoría `No consta` presenta en los datos, con los siguientes resultados.
 
 ```{r, include=FALSE}
 suicidios_barras_nacionalidad<-datos_ns_tidy%>%
@@ -393,7 +391,7 @@ suicidios_barras_nacionalidad<-datos_ns_tidy%>%
          Etiqueta_Porcentaje=scales::percent(Porcentaje,accuracy=0.01))
 ```
 
-```{r, echo=FALSE, out.width="85%"}
+```{r, echo=FALSE, out.width="80%"}
 gr_barras_nacionalidad <- ggplot(suicidios_barras_nacionalidad,
                                  aes(x = reorder(Nacionalidad, -Total_Suicidios),
                                      y = Total_Suicidios,
@@ -406,7 +404,7 @@ gr_barras_nacionalidad <- ggplot(suicidios_barras_nacionalidad,
     size = 4
   ) +
   labs(
-    title = "Proporción Total de Suicidios por Nacionalidad (2014-2023)",
+    title = "Proporción de Suicidios por Nacionalidad",
     fill = "Nacionalidad",
     x = "Nacionalidad",
     y = "Número Total de Suicidios"
@@ -421,8 +419,8 @@ print(gr_barras_nacionalidad)
 
 ```
 
-Como se observa en el gráfico, la proporción de datos de esta categoría es prácticamente nula, con apenas un 0.02%. Por esta razón, para el análisis de los datos de suicidio segmentados por `Nacionalidad` esta categoría no se toma en consideración.
-Finalmente para este dataset, la variable `Total` cuenta con un total de 60 datos, donde se muestran el total de suicidios registrados por año, y la información dividida por la nacionalidad de las personas.
+Como se observa en el gráfico, la categoría `No consta` representa una proporción insignificante de los casos con apenas un 0.02%, por lo que se excluye del análisis segmentado por `Nacionalidad` que se realizará.
+En cuanto a la variable `Total`, esta contiene 60 registros que reflejan el número anual de suicidios, desglosado según la nacionalidad de las personas.
 A continuación se presenta un resumen de los datos presentes en esta variable.
 
 ```{r, echo=FALSE}
@@ -436,7 +434,8 @@ datos_ns_tidy%>%
     Q3 = quantile(Total, 0.75, na.rm = TRUE),
     Maximo = max(Total, na.rm = TRUE),
     Valores_NA = sum(is.na(Total))
-  )
+  ) %>%
+  kable(digits = 0)
 ```
 
 El conjunto de datos que presentan los datos de suicidio, separados por mes, sexo y edad, presenta la siguiente estructura. 
