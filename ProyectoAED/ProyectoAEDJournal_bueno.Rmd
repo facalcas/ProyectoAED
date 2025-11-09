@@ -391,7 +391,7 @@ suicidios_barras_nacionalidad<-datos_ns_tidy%>%
          Etiqueta_Porcentaje=scales::percent(Porcentaje,accuracy=0.01))
 ```
 
-```{r, echo=FALSE, out.width="80%"}
+```{r, echo=FALSE, out.width="85%"}
 gr_barras_nacionalidad <- ggplot(suicidios_barras_nacionalidad,
                                  aes(x = reorder(Nacionalidad, -Total_Suicidios),
                                      y = Total_Suicidios,
@@ -435,20 +435,16 @@ datos_ns_tidy%>%
     Maximo = max(Total, na.rm = TRUE),
     Valores_NA = sum(is.na(Total))
   ) %>%
-  kable(digits = 0)
+  kable(digits = 2)
 ```
 
-El conjunto de datos que presentan los datos de suicidio, separados por mes, sexo y edad, presenta la siguiente estructura. 
+El conjunto de datos que presentan los datos de suicidio separados por Mes, Sexo y Edad se compone de cinco variables siendo estas: `Año`, `Mes de defunción`, `Sexo`, `Edad` y `Total suicidios`.  
 
-```{r Estructura MSE, echo=FALSE}
+```{r Estructura MSE, include=FALSE}
 glimpse(MSE_sin_totales,width = 70)
 ```
 
-Se disponen de 5 variables llamadas `Año`, `Mes de defunción`,`Sexo`,`Edad` y `Total_suicidios`. Los nombres de estas variables son suficientemente representativos, y todas son de tipo factor excepto la variable numérica de `Total_suicidios`.
-
-En las variables `Mes de defunción`, `Sexo` y `Edad` se hizo la limpieza de categorías no necesarias como "Todos los meses", "Ambos sexos" y "Todas las edades"; esto para que en la visualización no se agregue ruido innecesario debido a que se tiene la capacidad de presentar esta información mediante agrupamientos de los datos.
-
-Por último, se presentan los datos de la variable `Total_suicidios`.
+Para las variables `Mes de defunción`, `Sexo` y `Edad` se hizo la limpieza de categorías no necesarias como "Todos los meses", "Ambos sexos" y "Todas las edades"; esto para que en la visualización no se agregue ruido innecesario debido a que se tiene la capacidad de presentar esta información mediante agrupamientos de los datos. Por último, se presentan los datos de la variable `Total suicidios`.
 
 ```{r, echo=FALSE}
 MSE_sin_totales%>%
@@ -460,20 +456,20 @@ MSE_sin_totales%>%
     Q3 = quantile(Total_suicidios, 0.75, na.rm = TRUE),
     Maximo = max(Total_suicidios, na.rm = TRUE),
     Valores_NA = sum(is.na(Total_suicidios))
-  )
+  )%>%
+  kable(digits = 2)
 ```
 
 Como se observa, existen meses sin suicidios registrados, y el máximo registrado en un mes es de 45 personas (ocurrido en agosto de 2020). Finalmente se muestra que la media de suicidios es de 10.63. Se destaca que este conjunto no presenta valores `NA`.
 
-Finalmente, el conjunto de datos con datos separados por Comunidad Autonóma presenta la siguiente estructura.
+Finalmente, el conjunto de datos con datos separados por comunidad autonóma presenta las variables `Año`, `Territorio`, `Sexo`, `Edad` y `Total`.
 
-```{r Estructura CSE, echo=FALSE}
+```{r Estructura CSE, include=FALSE}
 glimpse(CSE_tidy,width = 70)
 ```
 
-Se disponen de 5 variables llamadas `Año`, `Territorio`,`Sexo`,`Edad` y `Total`. Como se ha manejado en los otros datasets, se establecen factores para las variables `Año` (con el periodo de estudio de este proyecto), para la variable `Territorio` se establece un factor con 19 niveles que representan las Comunidades y Ciudades Autónomas españolas. Como en los anteriores conjuntos explicados, se establece un factor para `Sexo` y `Edad`, con los niveles analizados.
-
-Finalmente la variable `Total` muestra el número de suicidios presentados en bajo las condiciones anteriormente explicadas. 
+Las variables `Año` se define con un factor con el correspondiente periodo de estudio del proyecto, la variable `Territorio` incluye 19 niveles que representan las comunidades y ciudades autónomas españolas, De forma coherente con los otros datasets, las variables `Sexo` y `Edad` también se establecen como factores según los niveles analizados.
+Finalmente la variable `Total` muestra el número de suicidios presentados en bajo las condiciones anteriormente explicadas, con los siguientes resultados. 
 ```{r, echo=FALSE}
 CSE_tidy%>%
   summarise(
@@ -484,7 +480,8 @@ CSE_tidy%>%
     Q3 = quantile(Total, 0.75, na.rm = TRUE),
     Maximo = max(Total, na.rm = TRUE),
     Valores_NA = sum(is.na(Total))
-  )
+  ) %>%
+  kable(digits = 2)
 ```
 
 # Resultados
