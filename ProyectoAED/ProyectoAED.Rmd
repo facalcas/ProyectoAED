@@ -477,7 +477,7 @@ datos_ns_tidy%>%
 
 Como para nuestro análisis posterior precisaremos de la tasa de suicidios por nacionalidad (agrupando el sexo y dividiendo entre la población por nacionalidad), inspeccionamos si se presentan outliers. Usaremos la regla boxplot para esta detección.
 
-```{r, include=FALSE}
+```{r, include=TRUE}
  df_tidy_poblacion_NS_1 %>%
    summarise(
      `Outliers Tasa Suicidios por Nacionalidad` = sum(reglaboxplot(Tasa_suicidios_100k))
@@ -686,8 +686,7 @@ df_tidy_poblacion_NS <- df_tidy_poblacion_NS %>%
 ```{r grafico tasa suicidio por nacionalidad, echo=FALSE, out.width="90%"}
 ggplot(df_tidy_poblacion_NS, aes(x = Año, y = Tasa_suicidios_100k, color = Nacionalidad, group = Nacionalidad)) +
   geom_line() +
-  geom_point() +
-  labs(
+    labs(
     title = "Evolución de Tasa de Suicidio por Nacionalidad",
     subtitle = "Suicidios por cada 100.000 habitantes",
     x = "Año",
@@ -792,7 +791,7 @@ mapas_totals<-CSE_map_F_totals%>%
   filter(!is.na(Año)) %>%
   ggplot()+
   geom_sf(aes(fill=Total_Absoluto),color="white",linewidth=0.1)+
-  facet_wrap(~Año,ncol=4)+
+  facet_wrap(~Año,ncol=5)+
   scale_fill_gradient(
     low="white",
     high = "black",
@@ -848,7 +847,7 @@ mapas_tasas <- CSE_map_F_tasas %>%
   filter(!is.na(Año)) %>%
   ggplot() +
   geom_sf(aes(fill = Tasa_100k), color = "white", linewidth = 0.1) +
-  facet_wrap(~ Año, ncol = 4) +
+  facet_wrap(~ Año, ncol = 5) +
   scale_fill_gradient(
     low="white",
     high = "black",
